@@ -1,0 +1,1978 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mitacs 2027 Visual Interview Study Guide · Ved Patel</title>
+<script>
+(() => {
+  const storageKey = 'mitacs-visual-guide-appearance';
+  const systemTheme = matchMedia('(prefers-color-scheme: dark)');
+  const root = document.documentElement;
+  let preference;
+
+  try {
+    const saved = localStorage.getItem(storageKey);
+    if (['light', 'dark', 'low-light'].includes(saved)) preference = saved;
+  } catch {
+    // The control still works when the browser restricts local storage.
+  }
+
+  function applyTheme() {
+    root.dataset.theme = preference || (systemTheme.matches ? 'dark' : 'light');
+  }
+
+  applyTheme();
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const header = document.querySelector('.site-bar');
+    const navigation = header.querySelector('.guide-nav');
+    const appearance = header.querySelector('.appearance');
+    const menus = [...header.querySelectorAll('details')];
+    const options = appearance.querySelectorAll('input');
+
+    function syncAppearance() {
+      applyTheme();
+      for (const option of options) option.checked = option.value === root.dataset.theme;
+    }
+
+    syncAppearance();
+    systemTheme.addEventListener('change', syncAppearance);
+    appearance.addEventListener('change', (event) => {
+      preference = event.target.value;
+      syncAppearance();
+      try {
+        localStorage.setItem(storageKey, preference);
+      } catch {
+        // Keep the selected appearance for the current visit.
+      }
+    });
+    appearance.hidden = false;
+
+    function updateCurrentLink() {
+      const target = document.querySelector(':target');
+      const project = target?.closest('.project');
+      const section = target?.closest('main > section');
+      const activeId = project?.id || section?.id || 'quick-start';
+      navigation.querySelector('.project-disclosure').toggleAttribute('data-current', Boolean(project) || activeId === 'projects');
+      for (const link of navigation.querySelectorAll('a')) {
+        const id = link.hash.slice(1);
+        if (id === activeId || (id === 'difficult' && activeId === 'personal')) {
+          link.setAttribute('aria-current', 'location');
+        } else {
+          link.removeAttribute('aria-current');
+        }
+      }
+    }
+
+    updateCurrentLink();
+    window.addEventListener('hashchange', updateCurrentLink);
+    new ResizeObserver(() => {
+      root.style.setProperty('--header-height', `${header.offsetHeight}px`);
+    }).observe(header);
+
+    for (const menu of menus) {
+      menu.addEventListener('focusout', (event) => {
+        if (event.relatedTarget && !menu.contains(event.relatedTarget)) menu.open = false;
+      });
+    }
+
+    document.addEventListener('click', (event) => {
+      const link = event.target.closest('.guide-nav a');
+      for (const menu of menus) {
+        if (link || !menu.contains(event.target)) menu.open = false;
+      }
+      if (link?.closest('details') && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
+        const target = document.getElementById(link.hash.slice(1));
+        target.tabIndex = -1;
+        target.focus({ preventScroll: true });
+      }
+    });
+    header.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      const menu = menus.find(item => item.open);
+      if (menu) {
+        menu.open = false;
+        menu.querySelector('summary').focus();
+      }
+    });
+  });
+})();
+</script>
+<style>
+:root {
+  color-scheme: light;
+  --gutter: clamp(1rem, 3.5vw, 2.25rem);
+  --text: #182639;
+  --muted: #506075;
+  --bg: #f3f6fa;
+  --surface: #ffffff;
+  --border: #d6dfe9;
+  --control-edge: #8595a9;
+  --link: #245487;
+  --focus: #2765a5;
+  --secondary: #334155;
+  --indigo: #eaf0f8;
+  --green: #eaf5ef;
+  --blue: #eaf4f9;
+  --amber: #fbf5e5;
+  --rose: #faeef0;
+  --indigo-text: #233c61;
+  --green-text: #065f46;
+  --blue-text: #075985;
+  --violet-text: #5b21b6;
+  --rose-text: #9f1239;
+  --green-edge: #318269;
+  --amber-edge: #ddc68a;
+  --rose-edge: #f8ced8;
+  --banner-start: #172c47;
+  --banner-end: #263f61;
+  --banner-text: #f6f9ff;
+  --banner-muted: #d5e1f1;
+  --banner-eyebrow: #b8cfea;
+  --accent-text-mix: 20%;
+  --shadow: #172b4728;
+}
+@media screen {
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --text: #e3e9f2;
+    --muted: #aebbd0;
+    --bg: #101722;
+    --surface: #192330;
+    --border: #38485e;
+    --control-edge: #71849f;
+    --link: #b1d1fa;
+    --focus: #b1d1fa;
+    --secondary: #c2cee0;
+    --indigo: #253750;
+    --green: #1a322d;
+    --blue: #1e3043;
+    --amber: #332c21;
+    --rose: #382632;
+    --indigo-text: #d1e3fd;
+    --green-text: #a1e5cc;
+    --blue-text: #a1d9f8;
+    --violet-text: #dbc3ff;
+    --rose-text: #ffb7cc;
+    --green-edge: #57caa4;
+    --amber-edge: #78613a;
+    --rose-edge: #79495d;
+    --banner-start: #1b2b43;
+    --banner-end: #22364e;
+    --banner-text: #e8edf5;
+    --banner-muted: #c2cee0;
+    --banner-eyebrow: #aec8e9;
+    --accent-text-mix: 72%;
+    --shadow: #00000045;
+  }
+  :root[data-theme="low-light"] {
+    --text: #2e251c;
+    --muted: #594938;
+    --bg: #e7dbc4;
+    --surface: #f0e5cf;
+    --border: #b6a17f;
+    --control-edge: #8a7455;
+    --link: #634a2f;
+    --focus: #795835;
+    --secondary: #4d3e30;
+    --indigo: #e4d6bc;
+    --green: #e0e5c9;
+    --blue: #dce4d9;
+    --amber: #eddcb0;
+    --rose: #efd5ca;
+    --indigo-text: #483627;
+    --green-text: #2d533a;
+    --blue-text: #285362;
+    --violet-text: #59377b;
+    --rose-text: #782f47;
+    --green-edge: #64835a;
+    --amber-edge: #b49a62;
+    --rose-edge: #be8e82;
+    --banner-start: #392f29;
+    --banner-end: #524232;
+    --banner-text: #f4e7cb;
+    --banner-muted: #e9d9b9;
+    --banner-eyebrow: #dfcbac;
+    --accent-text-mix: 22%;
+    --shadow: #3f322927;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 17px/1.58 -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  overflow-wrap: anywhere;
+}
+h1, h2, h3, h4, h5, p, ol, ul, dl, figure { margin: 0; }
+h1, h2, h3, h4, h5 { line-height: 1.23; }
+h1 { font-size: clamp(2.3rem, 5.5vw, 4.35rem); letter-spacing: -.045em; }
+h2 { font-size: clamp(1.6rem, 3.5vw, 2rem); letter-spacing: -.03em; margin-bottom: .95rem; }
+h3 { font-size: 1.3rem; }
+h4 { font-size: 1.12rem; margin-bottom: .6rem; }
+h5 { font-size: 1rem; }
+a { color: var(--link); text-underline-offset: .18em; }
+:is(a, summary):focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+html { scroll-padding-top: calc(var(--header-height, 4.6rem) + .6rem); }
+[id] { scroll-margin-top: .75rem; }
+ul, ol { padding-inline-start: 1.2rem; }
+li + li { margin-top: .22rem; }
+.page { padding-block: clamp(1.15rem, 3vw, 2.5rem) 3.5rem; }
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(13rem, .45fr);
+  align-items: end;
+  gap: clamp(1.5rem, 5vw, 4rem);
+  padding: clamp(1.4rem, 5vw, 3.5rem);
+  border-radius: 1rem;
+  background: linear-gradient(125deg, var(--banner-start) 20%, var(--banner-end));
+  color: var(--banner-text);
+}
+.hero h1 { font-family: Georgia, "Times New Roman", serif; font-weight: 500; line-height: 1.02; text-wrap: balance; }
+.hero-copy > p:not(.eyebrow) { margin-top: 1rem; color: var(--banner-muted); max-width: 36ch; }
+.hero .eyebrow { margin-bottom: .85rem; color: var(--banner-eyebrow); }
+.hero .eyebrow span { margin-inline: .35rem; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.4rem; }
+.hero-actions a {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  min-height: 2.6rem;
+  padding: .45rem .75rem;
+  border: 1px solid color-mix(in srgb, var(--banner-muted) 52%, transparent);
+  border-radius: .42rem;
+  color: var(--banner-text);
+  font-size: .85rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.hero-actions a:first-child { color: var(--banner-start); background: var(--banner-text); }
+.hero-actions a:hover { text-decoration: underline; }
+.hero-actions a:focus-visible { outline-color: var(--banner-eyebrow); }
+.hero-route {
+  padding: 1rem 1.15rem;
+  border: 1px solid color-mix(in srgb, var(--banner-muted) 28%, transparent);
+  border-radius: .7rem;
+  background: color-mix(in srgb, var(--banner-muted) 7%, transparent);
+}
+.hero-route .eyebrow { margin-bottom: .45rem; }
+.hero-route ol { padding: 0; list-style: none; counter-reset: route; }
+.hero-route li {
+  display: flex;
+  align-items: baseline;
+  gap: .65rem;
+  margin: 0;
+  padding-block: .55rem;
+  color: var(--banner-text);
+  font-size: .85rem;
+  line-height: 1.35;
+  counter-increment: route;
+}
+.hero-route li + li { border-top: 1px solid color-mix(in srgb, var(--banner-muted) 24%, transparent); }
+.hero-route li::before { content: counter(route, decimal-leading-zero); color: var(--banner-eyebrow); font-size: .73rem; font-variant-numeric: tabular-nums; }
+.eyebrow, dt, .q-label, .a-label { font-weight: 720; }
+.eyebrow { font-size: .8rem; letter-spacing: .04em; text-transform: uppercase; }
+main > section { margin-top: clamp(2.3rem, 5vw, 3.7rem); }
+main > section:first-child { margin-top: clamp(1.8rem, 4vw, 2.75rem); }
+.section-note { color: var(--muted); margin-bottom: 1rem; }
+.index, .sheet-links { display: flex; flex-wrap: wrap; gap: .38rem .85rem; }
+.index { margin-top: .6rem; }
+.index a, .sheet-links a { font-size: .9rem; font-weight: 650; }
+.project-list, .grid { display: grid; gap: .75rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.project-list { grid-template-columns: repeat(3, minmax(0, 1fr)); list-style: none; padding: 0; margin: .8rem 0 1rem; }
+.project-list li { margin: 0; }
+.project-list a { display: block; height: 100%; padding: .8rem .95rem; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: .65rem; font-size: .93rem; line-height: 1.4; font-weight: 680; text-decoration: none; }
+.project-list a:hover { background: var(--indigo); color: var(--link); }
+.project-list small { display: block; color: var(--muted); font-weight: 450; font-size: .83rem; margin-top: .25rem; }
+:is(#gcmt, [data-project="gcmt"]) { --accent: #4338a6; }
+:is(#lf, [data-project="lf"]) { --accent: #136744; }
+:is(#urban, [data-project="urban"]) { --accent: #925018; }
+:is(#pawn, [data-project="pawn"]) { --accent: #963357; }
+:is(#voice, [data-project="voice"]) { --accent: #135c8f; }
+:is(#atlas, [data-project="atlas"]) { --accent: #65388f; }
+:is(#smart, [data-project="smart"]) { --accent: #096b70; }
+:is(#eda, [data-project="eda"]) { --accent: #826315; }
+:is(#older, [data-project="older"]) { --accent: #505e72; }
+.site-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.site-bar-inner, .page {
+  width: min(100% - 2 * var(--gutter), 70rem);
+  margin-inline: auto;
+}
+.site-bar-inner {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  min-height: 4.5rem;
+}
+.brand {
+  display: inline-flex;
+  justify-self: start;
+  align-items: center;
+  gap: .65rem;
+  color: var(--text);
+  text-decoration: none;
+  font-size: .9rem;
+  font-weight: 750;
+  line-height: 1.12;
+}
+.brand-mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: .55rem;
+  background: var(--link);
+  color: var(--surface);
+  font-size: .75rem;
+  letter-spacing: .04em;
+}
+.brand small {
+  display: block;
+  margin-top: .18rem;
+  color: var(--muted);
+  font-size: .7rem;
+  font-weight: 550;
+}
+.guide-nav { display: flex; align-items: center; gap: .18rem; }
+.nav-item, .appearance-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  min-height: 2.5rem;
+  padding: .35rem .7rem;
+  border-radius: .46rem;
+  color: var(--muted);
+  font-size: .85rem;
+  font-weight: 650;
+  line-height: 1.25;
+  text-decoration: none;
+}
+.site-bar summary { cursor: pointer; list-style: none; }
+.site-bar summary::-webkit-details-marker { display: none; }
+.nav-item:hover, .appearance-toggle:hover { background: var(--bg); color: var(--text); }
+.nav-item[aria-current], .project-disclosure[data-current] > summary, .site-bar details[open] > summary {
+  background: var(--indigo);
+  color: var(--link);
+}
+.nav-caret {
+  width: .4rem;
+  height: .4rem;
+  border: solid currentColor;
+  border-width: 0 1.5px 1.5px 0;
+  rotate: 45deg;
+  margin-top: -.19rem;
+  flex: none;
+}
+details[open] > summary .nav-caret { rotate: 225deg; margin-top: .2rem; }
+.appearance { justify-self: end; }
+.appearance-toggle { border: 1px solid var(--control-edge); color: var(--text); }
+.appearance-icon { flex: none; width: 1rem; height: 1rem; }
+.nav-panel {
+  position: absolute;
+  top: calc(100% + .5rem);
+  max-height: calc(100dvh - var(--header-height, 7rem) - 1.5rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--border);
+  border-radius: .8rem;
+  background: var(--surface);
+  box-shadow: 0 12px 32px var(--shadow);
+  padding: .8rem;
+}
+.project-menu { inset-inline: 0; width: min(100%, 46rem); margin-inline: auto; }
+.appearance-menu { inset-inline-end: 0; width: min(100%, 17.5rem); }
+.panel-label {
+  margin: 0 .5rem .42rem;
+  color: var(--muted);
+  font-size: .69rem;
+  font-weight: 750;
+  letter-spacing: .085em;
+  text-transform: uppercase;
+}
+.project-menu ol {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .15rem .45rem;
+  padding: 0;
+  list-style: none;
+  counter-reset: project;
+}
+.project-menu li { margin: 0; counter-increment: project; }
+.project-menu a {
+  display: flex;
+  align-items: baseline;
+  gap: .6rem;
+  min-height: 2.55rem;
+  padding: .62rem .5rem;
+  border-radius: .38rem;
+  color: var(--text);
+  text-decoration: none;
+  font-size: .86rem;
+  line-height: 1.3;
+  font-weight: 630;
+}
+.project-menu li a::before {
+  content: counter(project, decimal-leading-zero);
+  color: var(--muted);
+  font-size: .73rem;
+  font-variant-numeric: tabular-nums;
+}
+.project-menu a:hover, .project-menu a[aria-current] { background: var(--indigo); color: var(--link); }
+.project-menu .all-projects { margin-top: .45rem; border-top: 1px solid var(--border); color: var(--link); }
+.appearance-options { margin: 0; padding: 0; border: 0; min-inline-size: 0; }
+.appearance-option {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: .65rem;
+  padding: .55rem .5rem;
+  border-radius: .4rem;
+  cursor: pointer;
+  font-size: .86rem;
+  font-weight: 670;
+  line-height: 1.32;
+}
+.appearance-option:hover, .appearance-option:has(input:checked) { background: var(--indigo); }
+.appearance-option:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: -2px; }
+.appearance-option input { margin: .12rem 0 0; width: 1rem; height: 1rem; accent-color: var(--link); }
+.appearance-option small { display: block; margin-top: .14rem; color: var(--muted); font-size: .78rem; font-weight: 450; }
+.project-list a[data-project] { border-inline-start: 3px solid color-mix(in srgb, var(--accent) 72%, var(--border)); }
+.project {
+  --project-ink: color-mix(in srgb, var(--text) var(--accent-text-mix), var(--accent));
+  margin-top: 2.75rem;
+}
+.project-head {
+  border: 1px solid var(--border);
+  border-radius: .8rem;
+  background: var(--surface);
+}
+.project-identity {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.35rem;
+  border-block-end: 1px solid var(--border);
+  border-radius: .75rem .75rem 0 0;
+  background: color-mix(in srgb, var(--project-ink) 7%, var(--surface));
+}
+.project-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 3.6rem;
+  height: 3.6rem;
+  border: 1px solid var(--border);
+  border-radius: .7rem;
+  background: var(--surface);
+  font-size: 1.85rem;
+}
+.project-category {
+  color: var(--project-ink);
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+}
+.project-head h3 {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  letter-spacing: -.025em;
+  margin: .14rem 0 .25rem;
+}
+.project-head .stack { color: var(--muted); margin-top: .28rem; }
+.project-head .sheet-links { margin: 0; padding: .45rem .65rem; gap: .22rem; }
+.sheet-links a { display: inline-flex; align-items: center; min-height: 2.15rem; padding: .25rem .55rem; border-radius: .35rem; text-decoration: none; }
+.sheet-links a:hover { background: var(--indigo); text-decoration: underline; }
+.project:target .project-head {
+  border-color: var(--project-ink);
+}
+.stack, .source { color: var(--muted); font-size: .88rem; }
+.sheet-links { margin-top: .45rem; }
+.topic { margin-top: 1.45rem; }
+.sheet-intro, .prompt, .remember, .caution, .flow, .tile, .question, .answer, .hard-card {
+  border-radius: .65rem;
+}
+.sheet-intro { margin-top: 1rem; }
+.prompt, .remember, .caution, .flow, .tile, .hard-card { padding: .85rem 1rem; }
+.prompt { background: var(--green); border-inline-start: 3px solid var(--green-edge); }
+#project-index { margin-top: 1.55rem; }
+.remember { background: var(--amber); border: 1px solid var(--amber-edge); }
+.caution { background: var(--rose); border: 1px solid var(--rose-edge); }
+.caution p + p { margin-top: .35rem; }
+.flow { background: var(--surface); border: 1px solid var(--border); margin-bottom: .52rem; }
+.flow ol { display: flex; padding: 0; list-style: none; gap: 1.15rem; }
+.flow li { position: relative; flex: 1; display: grid; place-content: center; min-width: 0; margin: 0; padding: .48rem; text-align: center; background: var(--blue); border: 1px solid var(--border); border-radius: .38rem; font-size: .92rem; font-weight: 670; line-height: 1.28; }
+.flow li:not(:last-child)::after { content: "→"; position: absolute; inset-inline-start: calc(100% + .16rem); top: 50%; translate: 0 -50%; color: var(--muted); }
+.flow li:first-child { background: var(--indigo); }
+.flow li:last-child { background: var(--green); }
+.flow--gcmt li:nth-child(3) { background: var(--amber); }
+.flow--lf li:nth-child(3), .flow--lf li:nth-child(4) { background: var(--indigo); }
+.flow--atlas li:nth-child(2), .flow--atlas li:nth-child(4) { background: var(--amber); }
+.flow--older li { border-style: dashed; background: var(--bg); }
+.flow figcaption { margin-bottom: .65rem; font-weight: 700; font-size: .92rem; }
+.steps { font-size: .95rem; }
+.compare { margin-top: .65rem; background: var(--bg); }
+.compare p { margin-top: .16rem; }
+.tile { border: 1px solid var(--border); background: var(--surface); min-width: 0; }
+.concepts .tile h5 { color: var(--blue-text); }
+.decisions .tile h5 { color: var(--violet-text); }
+.tile p + p, .tile dl, .tile h5 + p { margin-top: .26rem; }
+.facts { display: grid; gap: .19rem; }
+.facts dt, .facts dd { display: inline; margin: 0; }
+.facts dt::after { content: " · "; color: var(--muted); }
+.facts > div { font-size: .92rem; }
+.failure-list { display: grid; gap: .5rem; }
+.failure-list .tile h5 { color: var(--rose-text); }
+.spoken { display: grid; gap: .45rem; }
+.spoken .eyebrow { color: var(--green-text); margin-bottom: .22rem; }
+.spoken .prompt p + p + p { margin-top: .35rem; }
+.qa-list { display: grid; gap: .75rem; }
+.qa { border: 1px solid var(--border); background: var(--surface); border-radius: .65rem; overflow: hidden; }
+.question, .answer { padding: .68rem .85rem; border-radius: 0; }
+.question { background: var(--indigo); color: var(--indigo-text); }
+.q-label, .a-label { font-size: .81rem; margin-right: .35rem; }
+.a-label { color: var(--green-text); }
+.follow { padding: .5rem .85rem .65rem; border-top: 1px solid var(--border); font-size: .89rem; color: var(--secondary); }
+.follow p + p { margin-top: .14rem; }
+.follow strong { color: var(--text); }
+.small-qa { padding: .28rem 0; border-top: 1px solid var(--border); }
+.small-qa dt { line-height: 1.28; }
+.small-qa dd { margin: .1rem 0 0; }
+.fast-qa { margin-top: .43rem; }
+.fast-qa .small-qa { font-size: .91rem; border-color: var(--amber-edge); padding-block: .17rem; }
+.source { margin-top: .7rem; }
+.jump-up { font-size: .86rem; margin-top: .55rem; }
+.hard-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .52rem; margin-top: .75rem; }
+.hard-card { background: var(--surface); border: 1px solid var(--border); font-size: .92rem; }
+.hard-card p { margin-top: .25rem; }
+.example { color: var(--secondary); }
+.final-grid { margin-top: .55rem; }
+.final-grid .tile p { margin-top: .2rem; }
+.map { color: var(--link); font-size: .88rem; font-weight: 640; }
+.final-topic { margin-top: .95rem; }
+@media (max-width: 760px) {
+  .project-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero { grid-template-columns: minmax(0, 1fr) minmax(11rem, .45fr); gap: 1.35rem; }
+}
+@media (max-width: 660px) {
+  html { scroll-padding-top: calc(var(--header-height, 7rem) + .6rem); }
+  .site-bar-inner { grid-template-columns: 1fr auto; gap: .4rem .75rem; padding-block: .55rem .45rem; }
+  .guide-nav { grid-area: 2 / 1 / 3 / -1; justify-content: space-between; gap: .12rem; }
+  .nav-item { padding-inline: .48rem; font-size: .82rem; }
+  .hero { grid-template-columns: 1fr; }
+  .hero-break, .hero-route { display: none; }
+}
+@media (max-width: 540px) {
+  .project-menu ol { grid-template-columns: 1fr; }
+  .project-identity { gap: .75rem; padding: 1rem; }
+  .project-mark { width: 2.7rem; height: 2.7rem; font-size: 1.35rem; }
+  .project-list, .grid, .hard-list { grid-template-columns: 1fr; }
+  .flow ol { flex-direction: column; gap: .85rem; }
+  .flow li:not(:last-child)::after { content: "↓"; inset-inline-start: 50%; top: calc(100% + .01rem); translate: -50% 0; }
+}
+@page { size: A4; margin: 14mm 15mm 15mm; }
+@media print {
+  :root { --text: #101010; --muted: #292929; --link: #171717; --border: #aaa; }
+  body { background: white; max-width: none; padding: 0; font-size: 10.5pt; line-height: 1.34; }
+  .page { width: auto; padding: 0; }
+  .hero { display: block; background: white; color: var(--text); padding: 0; border-radius: 0; }
+  .hero-copy > p, .hero-copy > p:not(.eyebrow) { color: var(--muted); max-width: none; }
+  h1 { font-size: 20pt; }
+  h2 { font-size: 16pt; }
+  .project-head h3 { font-size: 15pt; }
+  h2, h3, h4, h5 { break-after: avoid; }
+  p, li { orphans: 2; widows: 2; }
+  main > section { margin-top: 1.05rem; }
+  .project { margin-top: .9rem; }
+  .topic, .final-topic { margin-top: .66rem; }
+  .project-head, .tile, .qa, .prompt, .flow, .caution, .hard-card, .small-qa { break-inside: avoid; }
+  .project-head, .flow { break-after: avoid; }
+  .grid, .qa-list, .hard-list, .spoken, .failure-list { display: block; }
+  .grid .tile, .qa, .hard-card, .spoken .prompt, .failure-list .tile { margin-bottom: .3rem; }
+  .tile, .hard-card, .prompt, .remember, .caution { padding: .32rem .48rem; }
+  .q-label, .a-label, .stack, .source, .flow li, .facts > div, .follow, .hard-card, .fast-qa .small-qa, .map { font-size: 9.5pt; }
+  .question { border-bottom: 1px solid var(--border); }
+  .answer { border-inline-start: 2px solid #176c51; }
+  html { scroll-padding-top: 0; }
+  .site-bar, .hero-break, .hero-actions, .hero-route, #quick-start nav, .sheet-links, .jump-up { display: none; }
+  .project-head { border: 0; border-inline-start: 3px solid var(--accent); }
+  .project-identity { background: white; color: var(--text); border: 0; padding: .4rem .55rem; }
+  .project-mark { width: auto; height: auto; border: 0; background: none; font-size: 1.25rem; }
+  .project-category, .project-head .stack { color: var(--muted); }
+  .project:target .project-head { border-color: var(--accent); }
+  .flow ol { flex-direction: row; gap: 1rem; }
+  .flow li:not(:last-child)::after { content: "→"; inset-inline-start: calc(100% + .12rem); top: 50%; translate: 0 -50%; }
+}
+</style>
+</head>
+<body>
+<header class="site-bar">
+  <div class="site-bar-inner">
+    <a class="brand" href="#top">
+      <span class="brand-mark" aria-hidden="true">VP</span>
+      <span>Mitacs GRI 2027<small>Interview study guide</small></span>
+    </a>
+    <nav class="guide-nav" aria-label="Study guide">
+      <a class="nav-item" href="#quick-start">Overview</a>
+      <details class="project-disclosure">
+        <summary class="nav-item">Projects <span class="nav-caret" aria-hidden="true"></span></summary>
+        <div class="nav-panel project-menu">
+          <p class="panel-label">Project sheets</p>
+          <ol>
+            <li><a href="#gcmt">GCMT Shop</a></li>
+            <li><a href="#lf">LF Finance Management Software</a></li>
+            <li><a href="#urban">UrbanEdge Land Space</a></li>
+            <li><a href="#pawn">PawnTrack</a></li>
+            <li><a href="#voice">VoiceToText</a></li>
+            <li><a href="#atlas">ATLAS</a></li>
+            <li><a href="#smart">Smart Flow AI Planner</a></li>
+            <li><a href="#eda">Financial EDA</a></li>
+            <li><a href="#older">Older Urban Edge Living Space</a></li>
+          </ol>
+          <a class="all-projects" href="#projects">View all project sheets <span aria-hidden="true">→</span></a>
+        </div>
+      </details>
+      <a class="nav-item" href="#difficult">Practice</a>
+      <a class="nav-item" href="#revision">Revision</a>
+    </nav>
+    <details class="appearance" hidden>
+      <summary class="appearance-toggle">
+        <svg class="appearance-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg>
+        Appearance <span class="nav-caret" aria-hidden="true"></span>
+      </summary>
+      <div class="nav-panel appearance-menu">
+        <fieldset class="appearance-options">
+          <legend class="panel-label">Reading appearance</legend>
+          <label class="appearance-option">
+            <input type="radio" name="appearance" value="light">
+            <span>Light<small>Bright, neutral pages</small></span>
+          </label>
+          <label class="appearance-option">
+            <input type="radio" name="appearance" value="dark">
+            <span>Dark<small>Deep slate with soft text</small></span>
+          </label>
+          <label class="appearance-option">
+            <input type="radio" name="appearance" value="low-light">
+            <span>Low white light<small>Warm paper tones</small></span>
+          </label>
+        </fieldset>
+      </div>
+    </details>
+  </div>
+</header>
+<div class="page">
+<header class="hero" id="top">
+  <div class="hero-copy">
+    <p class="eyebrow">Mitacs GRI 2027 <span aria-hidden="true">/</span> Ved Patel</p>
+    <h1>Visual Interview<br class="hero-break"> Study Guide</h1>
+    <p>Nine projects, clear workflows and short answers to practise aloud.</p>
+    <div class="hero-actions">
+      <a href="#project-index">Browse projects <span aria-hidden="true">↓</span></a>
+      <a href="#difficult">Practise questions <span aria-hidden="true">→</span></a>
+    </div>
+  </div>
+  <div class="hero-route">
+    <p class="eyebrow">Study plan</p>
+    <ol>
+      <li>Review the project workflows</li>
+      <li>Practise answering aloud</li>
+      <li>Finish with a quick revision</li>
+    </ol>
+  </div>
+</header>
+<main>
+<section id="quick-start" aria-labelledby="quick-title">
+<h2 id="quick-title">Quick start</h2>
+<div class="prompt"><p class="eyebrow">My opening · 30–45 seconds</p><p>I’m Ved Patel, a Computer Engineering student from Gujarat, graduating in June 2028. I focus on full-stack software, especially the backend rules that keep data correct when something fails or a request repeats. One example is LF Finance, where a payment can increase today’s cash while reducing an older debt. I also explored local AI tools with ATLAS, which made me more careful about what a benchmark actually measures. I’d like to bring those engineering skills to a research project and learn how to evaluate improvements rigorously.</p></div>
+<p class="section-note final-topic"><strong>Explain any project.</strong> Who needs it → what happens from input to result → one important design choice → one failure case or limit.</p>
+<nav id="project-index" aria-labelledby="project-index-title">
+<h3 id="project-index-title">Project index</h3>
+<ul class="project-list"><li><a href="#gcmt" data-project="gcmt"><span aria-hidden="true">💳</span> GCMT Shop<small>Online store with checkout, orders and invoices.</small></a></li>
+<li><a href="#lf" data-project="lf"><span aria-hidden="true">🧾</span> LF Finance Management Software<small>School fees, accounts and transfers by academic year.</small></a></li>
+<li><a href="#urban" data-project="urban"><span aria-hidden="true">🏘️</span> UrbanEdge Land Space<small>Property search with private intake and controlled publication.</small></a></li>
+<li><a href="#pawn" data-project="pawn"><span aria-hidden="true">🔐</span> PawnTrack<small>Customer, collateral, loan, payment and due tracking for lending teams.</small></a></li>
+<li><a href="#voice" data-project="voice"><span aria-hidden="true">🎙️</span> VoiceToText<small>Local macOS dictation with speech checks and text insertion.</small></a></li>
+<li><a href="#atlas" data-project="atlas"><span aria-hidden="true">🧭</span> ATLAS<small>Local assistant that routes requests to tools or a language model.</small></a></li>
+<li><a href="#smart" data-project="smart"><span aria-hidden="true">🗓️</span> Smart Flow AI Planner<small>Task planner with manual time blocks and rule-based priority.</small></a></li>
+<li><a href="#eda" data-project="eda"><span aria-hidden="true">📈</span> Financial EDA<small>Notebook that simulates prices and explores time-series statistics.</small></a></li>
+<li><a href="#older" data-project="older"><span aria-hidden="true">🏡</span> Older Urban Edge Living Space<small>Earlier React property website and client maintenance experience.</small></a></li></ul>
+<div class="index"><a href="#projects">Project sheets</a> <a href="#difficult">Difficult questions</a> <a href="#personal">Personal Q&amp;A</a> <a href="#revision">Final revision</a></div>
+</nav>
+</section>
+<section id="projects" aria-labelledby="projects-title">
+<h2 id="projects-title">My nine projects</h2>
+<p class="section-note">For a quick pass, trace the workflow, explain the concepts aloud and read the revision card. Use the questions for a second pass. Brackets mark details to fill with your real experience. Source findings describe the reviewed snapshots.</p>
+<article class="project" id="gcmt" aria-labelledby="gcmt-title">
+<header class="project-head">
+<div class="project-identity">
+<div class="project-mark" aria-hidden="true">💳</div>
+<div class="project-heading">
+<p class="project-category">Commerce &amp; payments</p>
+<h3 id="gcmt-title">GCMT Shop</h3>
+<p>Online store with checkout, orders and invoices.</p>
+<p class="stack">React · Supabase · PostgreSQL · Vercel · CCAvenue</p>
+</div>
+</div>
+<nav class="sheet-links" aria-label="GCMT Shop topics"><a href="#gcmt-flow">Workflow</a> <a href="#gcmt-concepts">Concepts</a> <a href="#gcmt-say">What to say</a> <a href="#gcmt-questions">Questions</a> <a href="#gcmt-revise">Revision card</a></nav>
+</header>
+<p class="sheet-intro">Customers browse products, add them to a cart and pay online. Store staff manage the catalog. The hard part is deciding who can set the price and what evidence can change the order to paid.</p>
+<section class="topic" id="gcmt-flow">
+<h4>How it works</h4>
+<figure class="flow flow--gcmt"><figcaption>Payment handoff</figcaption><ol>
+<li>Customer clicks Pay</li>
+<li>Vercel checks cart and price</li>
+<li>CCAvenue handles payment</li>
+<li>Callback checks response</li>
+<li>Postgres records outcome</li>
+</ol></figure><ol class="steps">
+<li>React sends shipping and an attempt ID. The server validates the session and reads the caller’s cart.</li>
+<li>The server calculates integer paise and saves the item snapshot in a pending order. The browser sends the prepared form to the gateway.</li>
+<li>The server checks decrypted fields. SQL locks the matching order, checks the amount and writes the receipt and order/cart changes together. The success screen looks up the caller’s order.</li>
+</ol><div class="grid compare"><div class="tile"><h5>Browser</h5><p>Starts checkout and shows the saved result.</p></div><div class="tile"><h5>Trusted path</h5><p>Server checks identity and price. SQL reconciles the callback.</p></div></div>
+</section>
+<section class="topic" id="gcmt-concepts">
+<h4>Concepts to understand</h4>
+<div class="grid concepts">
+<div class="tile"><h5>Trust boundary</h5><dl class="facts"><div><dt>Meaning</dt><dd>The browser can send made-up values.</dd></div><div><dt>Why it matters</dt><dd>Keep user input separate from trusted decisions.</dd></div><div><dt>Project example</dt><dd>Server checks identity and reads catalog prices.</dd></div><div><dt>What could go wrong</dt><dd>Accepting the displayed total would let a client underpay.</dd></div></dl></div>
+<div class="tile"><h5>Order snapshot</h5><dl class="facts"><div><dt>Meaning</dt><dd>Save a copy of the checkout facts.</dd></div><div><dt>Why it matters</dt><dd>Keep invoices and order history consistent.</dd></div><div><dt>Project example</dt><dd>The order keeps items and prices when created.</dd></div><div><dt>What could go wrong</dt><dd>A later catalog change could rewrite the history shown on an invoice.</dd></div></dl></div>
+<div class="tile"><h5>Encryption and authenticity</h5><dl class="facts"><div><dt>Meaning</dt><dd>Encryption hides readable data. Authenticity establishes who sent it.</dd></div><div><dt>Why it matters</dt><dd>Protect sensitive fields and check where evidence came from.</dd></div><div><dt>Project example</dt><dd>The helper uses AES-128-CBC with the provider-style derived key and fixed IV. The handler separately checks response fields against stored data.</dd></div><div><dt>What could go wrong</dt><dd>A response that decrypts does not establish that the gateway settled a payment.</dd></div></dl></div>
+<div class="tile"><h5>Transaction and row lock</h5><dl class="facts"><div><dt>Meaning</dt><dd>Commit related changes together and make writers take turns on one order.</dd></div><div><dt>Why it matters</dt><dd>Avoid partial changes and conflicting writes.</dd></div><div><dt>Project example</dt><dd>Reconciliation locks the order and writes receipt, status and cart effects together.</dd></div><div><dt>What could go wrong</dt><dd>Two handlers could otherwise act on the same pending state.</dd></div></dl></div>
+<div class="tile"><h5>Idempotency</h5><dl class="facts"><div><dt>Meaning</dt><dd>Repeating the same operation should leave one effect.</dd></div><div><dt>Why it matters</dt><dd>Handle network retries safely.</dd></div><div><dt>Project example</dt><dd>A matching receipt replay returns the recorded result.</dd></div><div><dt>What could go wrong</dt><dd>Ignoring the contents of a replay could hide a conflicting outcome.</dd></div></dl></div>
+</div>
+</section>
+<section class="topic" id="gcmt-say">
+<h4>What I can say</h4>
+<div class="spoken"><div class="prompt"><p class="eyebrow">20–30 seconds · simple</p><p>GCMT is an online shop built with React and Supabase. The part I’d focus on is checkout. The browser starts it, the server works out the real price, and the database records the payment result. That separation matters because anyone can change what their own browser sends.</p></div><div class="prompt"><p class="eyebrow">60–90 seconds · technical</p><p>When a customer clicks Pay, the React screen sends shipping details and an attempt ID. The server checks the session, reads that customer’s cart and gets product prices from the database. It calculates the total in paise and saves a pending order with a copy of what was bought. The browser then submits the encrypted request to CCAvenue.</p><p>When a response comes back, the server decrypts it, checks the fields and asks the database to match the stored order and amount. A lock and a unique receipt help it handle repeats. The success screen reads the saved order for that user. I’d distinguish this server path from the older Edge Function in my résumé and separate database reconciliation from proof of settlement.</p></div></div>
+</section>
+<section class="topic">
+<h4>Engineering decisions</h4>
+<p class="source">These are engineering rationales. Use your confirmed role when explaining a choice you made.</p><div class="grid decisions">
+<div class="tile"><h5>Price on the server</h5><dl class="facts"><div><dt>Problem</dt><dd>Browser totals are editable.</dd></div><div><dt>Approach</dt><dd>Reprice the caller’s stored cart in integer paise.</dd></div><div><dt>Benefit</dt><dd>The stored order has a consistent total without floating-point rupee arithmetic.</dd></div><div><dt>Limitation</dt><dd>A price change can leave a pending order before the customer confirms the new total.</dd></div></dl></div>
+<div class="tile"><h5>Reconcile in one database call</h5><dl class="facts"><div><dt>Problem</dt><dd>Retries can overlap.</dd></div><div><dt>Approach</dt><dd>Lock the order and record the receipt with the order/cart changes.</dd></div><div><dt>Benefit</dt><dd>A partial database update can roll back.</dd></div><div><dt>Limitation</dt><dd>The gateway charge is outside that transaction.</dd></div></dl></div>
+<div class="tile"><h5>Read payment status from storage</h5><dl class="facts"><div><dt>Problem</dt><dd>A success URL can be opened directly.</dd></div><div><dt>Approach</dt><dd>Fetch the saved order with an owner filter.</dd></div><div><dt>Benefit</dt><dd>The page reflects stored state.</dd></div><div><dt>Limitation</dt><dd>The client-generated PDF is an order view. Its presence is insufficient evidence of settlement.</dd></div></dl></div>
+</div>
+</section>
+<section class="topic" id="gcmt-questions">
+<h4>Questions a professor might ask</h4>
+<div class="qa-list">
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What does GCMT do?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> It lets customers shop and pay online. The checkout’s main engineering job is to connect a gateway response to the right order.</p>
+<div class="follow"><p><strong>Understand why.</strong> The server owns the price and SQL owns the stored change.</p><p><strong>Harder follow-up.</strong> Could the success URL set paid status? <strong>Answer.</strong> It only reads an authenticated user’s order.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What did you personally contribute?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> My part was [specific change]. I can show [file or diff] and explain [check I performed].</p>
+<div class="follow"><p><strong>Understand why.</strong> Separate original delivery, later hardening and any assistance.</p><p><strong>Harder follow-up.</strong> Did the résumé describe this exact server path? <strong>Answer.</strong> It describes the historical Supabase Edge Function. The inspected newer source uses Vercel handlers.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> Why use server handlers?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> Checkout needs a trusted place to verify identity and read prices. Gateway credentials and privileged database access stay there.</p>
+<div class="follow"><p><strong>Understand why.</strong> A caller can bypass React and send HTTP directly.</p><p><strong>Harder follow-up.</strong> What protects service-role writes? <strong>Answer.</strong> Server-side identity and ownership checks plus restricted database functions.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What does the order snapshot solve?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> It records the items and prices used for this checkout. The invoice can keep those values after the catalog changes.</p>
+<div class="follow"><p><strong>Understand why.</strong> Think of the order as the purchase record.</p><p><strong>Harder follow-up.</strong> Is the snapshot a price reservation? <strong>Answer.</strong> A later price change can still trigger review before the customer posts the form.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> Does AES prove payment?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The gateway response is encrypted with AES-CBC. Decrypting it lets the server read it. Matching fields helps reconcile the order, and proof of settlement needs separate provider evidence.</p>
+<div class="follow"><p><strong>Understand why.</strong> Decryption reads the fields. Reconciliation compares them with the order.</p><p><strong>Harder follow-up.</strong> What check was absent from the reviewed path? <strong>Answer.</strong> An independent status lookup or authenticated signature was not established.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What stops duplicate callbacks?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> SQL locks the order and checks the unique receipt. An identical repeat returns without applying the cart change again.</p>
+<div class="follow"><p><strong>Understand why.</strong> The lock makes writers take turns. The receipt lets the second recognize the first.</p><p><strong>Harder follow-up.</strong> What if the later result conflicts? <strong>Answer.</strong> The current path rejects conflicting final results, so reconciliation may still be needed.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What if the gateway charges but the database fails?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The order can remain pending while the gateway has taken money. I would reconcile it with the provider before asking for another payment.</p>
+<div class="follow"><p><strong>Understand why.</strong> A local rollback affects only the database.</p><p><strong>Harder follow-up.</strong> Does retrying checkout recover the earlier request? <strong>Answer.</strong> An existing attempt ID can return a conflict. Full response recovery was not established.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How was it tested?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> Inspected CI reported 37 Vitest and six Playwright passes. I’d describe those as recorded CI results for that revision.</p>
+<div class="follow"><p><strong>Understand why.</strong> Database test source covers permissions and replay. Provider testing is separate.</p><p><strong>Harder follow-up.</strong> Did that prove real settlement? <strong>Answer.</strong> Merchant configuration, authentic callbacks and settlement still need provider evidence.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What is the hardest boundary to explain?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> It’s who can mark an order paid. The browser can request checkout, but the server and database decide what to store.</p>
+<div class="follow"><p><strong>Understand why.</strong> Separate identity, price and payment evidence.</p><p><strong>Harder follow-up.</strong> Can anonymous sign-in still produce a user identity? <strong>Answer.</strong> Yes. A signed-in guest has an authenticated user ID for ownership checks.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What would you improve first?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> I’d confirm the provider’s verification contract and build a recovery path for orders left pending. I’d test it with approved sandbox responses and a lost acknowledgment.</p>
+<div class="follow"><p><strong>Understand why.</strong> Measure the difference between local and gateway state.</p><p><strong>Harder follow-up.</strong> What should happen to a changed replay? <strong>Answer.</strong> Flag it for investigation and preserve the evidence already recorded.</p></div>
+</div>
+</div>
+</section>
+<section class="topic">
+<h4>When something goes wrong</h4>
+<div class="failure-list"><div class="tile"><h5>Repeated callback</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>The same result arrives twice.</dd></div><div><dt>What the system does</dt><dd>A matching receipt replay exits without repeating the stored effects.</dd></div><div><dt>Remaining limit</dt><dd>Multi-connection behavior was not independently exercised.</dd></div></dl></div>
+<div class="tile"><h5>Charge succeeds, local write fails</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>The customer paid externally but the order can stay pending.</dd></div><div><dt>What the system does</dt><dd>A failed SQL transaction rolls back its local writes.</dd></div><div><dt>Remaining limit</dt><dd>Automatic provider recovery was not established.</dd></div></dl></div>
+<div class="tile"><h5>Forged success URL</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>A user visits the success page without paying.</dd></div><div><dt>What the system does</dt><dd>The page reads saved state through an owner-filtered API.</dd></div><div><dt>Remaining limit</dt><dd>A URL or invoice proves nothing about provider settlement.</dd></div></dl></div></div>
+</section>
+<section class="topic">
+<h4>What to qualify</h4>
+<div class="caution"><p>The older Edge Function lacked the current amount check and receipt handling. Keep the two versions separate.</p><p>The inspected path does not establish an independent signature/status check, real gateway settlement, or the production migration state.</p></div>
+</section>
+<p class="source">Source pointer · <a href="https://github.com/gcmt1/gcmt-vercel-webiste-vedpatel-project/blob/ee2044d3fbf9479f3f740bb4586a7c8f93c4d072/supabase/migrations/20261030203438_production_security.sql">Checkout and callback SQL</a></p>
+<section class="topic" id="gcmt-revise">
+<h4>Five-minute revision card</h4>
+<div class="remember"><dl class="facts"><div><dt>In one sentence</dt><dd>Online shop with server-priced checkout and database payment reconciliation.</dd></div><div><dt>Architecture</dt><dd>React → Vercel → CCAvenue → Vercel callback → Postgres</dd></div><div><dt>Remember</dt><dd>Trusted prices · order snapshot · idempotency</dd></div><div><dt>Main challenge</dt><dd>Coordinate the callback with the right pending order.</dd></div><div><dt>Biggest limit</dt><dd>Provider authenticity and settlement remain unverified.</dd></div></dl><dl class="fast-qa">
+<div class="small-qa"><dt>Who sets price?</dt><dd>The server reads stored product data.</dd></div>
+<div class="small-qa"><dt>Why snapshot?</dt><dd>Keep the actual checkout facts.</dd></div>
+<div class="small-qa"><dt>What stops replay?</dt><dd>Order lock plus a matching unique receipt.</dd></div>
+<div class="small-qa"><dt>What proves paid in the UI?</dt><dd>The stored, owner-filtered order.</dd></div>
+<div class="small-qa"><dt>What if SQL rolls back?</dt><dd>Check provider status before retrying payment.</dd></div>
+</dl></div>
+</section>
+<p class="jump-up"><a href="#quick-start">↑ Project index</a></p>
+</article>
+<article class="project" id="lf" aria-labelledby="lf-title">
+<header class="project-head">
+<div class="project-identity">
+<div class="project-mark" aria-hidden="true">🧾</div>
+<div class="project-heading">
+<p class="project-category">School finance &amp; records</p>
+<h3 id="lf-title">LF Finance Management Software</h3>
+<p>School fees, accounts and transfers by academic year.</p>
+<p class="stack">React · TypeScript · Supabase · PostgreSQL</p>
+</div>
+</div>
+<nav class="sheet-links" aria-label="LF Finance Management Software topics"><a href="#lf-flow">Workflow</a> <a href="#lf-concepts">Concepts</a> <a href="#lf-say">What to say</a> <a href="#lf-questions">Questions</a> <a href="#lf-revise">Revision card</a></nav>
+</header>
+<p class="sheet-intro">School staff can see what each student owes and what the school actually received. The app tracks enrollments, fees, transfers, expenses and money to recover. An old fee paid today reduces old debt and increases today’s cash.</p>
+<section class="topic" id="lf-flow">
+<h4>How it works</h4>
+<figure class="flow flow--lf"><figcaption>One late receipt, two reporting effects</figcaption><ol>
+<li>Staff records a fee</li>
+<li>React service sends receipt and request ID</li>
+<li>SQL checks ownership and retry</li>
+<li>SQL locks student-year enrollment</li>
+<li>Receipt reduces debt and adds cash</li>
+</ol></figure><ol class="steps">
+<li>The booking year says when money arrives. The original year identifies older debt, when relevant.</li>
+<li>The database checks caller ownership and compares any saved request with the incoming details. An identical retry returns the saved receipt.</li>
+<li>A new payment locks the enrollment. Database checks limit the amount. Reports use the saved records to answer both cash and debt questions.</li>
+</ol><div class="grid compare"><div class="tile"><h5>Cash booked now</h5><p>The current period receives the money.</p></div><div class="tile"><h5>Debt attached to the original year</h5><p>The historical enrollment’s unpaid amount falls.</p></div></div>
+</section>
+<section class="topic" id="lf-concepts">
+<h4>Concepts to understand</h4>
+<div class="grid concepts">
+<div class="tile"><h5>Obligation and receipt</h5><dl class="facts"><div><dt>Meaning</dt><dd>An obligation is what’s owed. A receipt is money received.</dd></div><div><dt>Why it matters</dt><dd>Answer debt and cash questions independently.</dd></div><div><dt>Project example</dt><dd>A late receipt can affect today’s cash and a prior enrollment.</dd></div><div><dt>What could go wrong</dt><dd>Putting both in one year distorts cash or student debt.</dd></div></dl></div>
+<div class="tile"><h5>Row-level security (RLS)</h5><dl class="facts"><div><dt>Meaning</dt><dd>The database limits which rows a user can access.</dd></div><div><dt>Why it matters</dt><dd>Keep financial records isolated at the database boundary.</dd></div><div><dt>Project example</dt><dd>Ordinary users are scoped to their own data. Privileged payment functions also check ownership explicitly.</dd></div><div><dt>What could go wrong</dt><dd>A caller could submit another owner’s account ID.</dd></div></dl></div>
+<div class="tile"><h5>Request identity</h5><dl class="facts"><div><dt>Meaning</dt><dd>One intended payment gets one stable ID.</dd></div><div><dt>Why it matters</dt><dd>Recognize a payment even after a lost reply.</dd></div><div><dt>Project example</dt><dd>The function compares the saved details on retry. A unique index backs it up.</dd></div><div><dt>What could go wrong</dt><dd>Generating a new ID after a lost reply can turn a retry into a second operation.</dd></div></dl></div>
+<div class="tile"><h5>Concurrency</h5><dl class="facts"><div><dt>Meaning</dt><dd>Two requests can overlap in time.</dd></div><div><dt>Why it matters</dt><dd>Protect a shared limit across different requests.</dd></div><div><dt>Project example</dt><dd>The enrollment lock makes competing new payments against one obligation take turns.</dd></div><div><dt>What could go wrong</dt><dd>Both could read the same balance and overpay it.</dd></div></dl></div>
+<div class="tile"><h5>Derived balance</h5><dl class="facts"><div><dt>Meaning</dt><dd>Calculate a balance from stored movements.</dd></div><div><dt>Why it matters</dt><dd>Keep the balance tied to a record of real movements.</dd></div><div><dt>Project example</dt><dd>A single transfer reduces one account and increases the other.</dd></div><div><dt>What could go wrong</dt><dd>Treating a transfer as income inflates the school’s overall funds.</dd></div></dl></div>
+</div>
+</section>
+<section class="topic" id="lf-say">
+<h4>What I can say</h4>
+<div class="spoken"><div class="prompt"><p class="eyebrow">20–30 seconds · simple</p><p>LF Finance helps a school manage fees and accounts across academic years. The central idea is that a student’s debt and a receipt are different records. If someone pays last year’s fee today, it reduces that old balance while the money arrives in the current year.</p></div><div class="prompt"><p class="eyebrow">60–90 seconds · technical</p><p>React collects the receipt details and sends them through a service to a Supabase database function. The receipt can name the year money came in and the earlier year whose fee is being paid. The function checks that the caller owns the related records.</p><p>It looks for the same request ID before doing new work, then locks the enrollment to check what can still be paid. This matters because the same request can be retried, while two different requests can compete for the same unpaid amount. Transfers are stored as one movement between two accounts. I’d also point out that the steps to create historical records and the actual payment call are separate.</p></div></div>
+</section>
+<section class="topic">
+<h4>Engineering decisions</h4>
+<p class="source">These are engineering rationales. Use your confirmed role when explaining a choice you made.</p><div class="grid decisions">
+<div class="tile"><h5>Separate student and enrollment</h5><dl class="facts"><div><dt>Problem</dt><dd>A student may attend multiple years.</dd></div><div><dt>Approach</dt><dd>Keep a student identity and one year-specific enrollment.</dd></div><div><dt>Benefit</dt><dd>Old debt can remain attached to the right year.</dd></div><div><dt>Limitation</dt><dd>Reports need to be clear about cutoff dates and historical metadata.</dd></div></dl></div>
+<div class="tile"><h5>Two kinds of payment locks</h5><dl class="facts"><div><dt>Problem</dt><dd>Replays and separate receipts pose different risks.</dd></div><div><dt>Approach</dt><dd>Lock the request identity and also lock the enrollment for new work.</dd></div><div><dt>Benefit</dt><dd>One avoids duplicate effects, the other protects the remaining amount.</dd></div><div><dt>Limitation</dt><dd>The local gate’s retry case was sequential. Use separate sessions to test races.</dd></div></dl></div>
+<div class="tile"><h5>One transfer record</h5><dl class="facts"><div><dt>Problem</dt><dd>Independent debit and credit writes could disagree.</dd></div><div><dt>Approach</dt><dd>Save one row after checking the source account’s available funds.</dd></div><div><dt>Benefit</dt><dd>Both effects follow from the same record.</dd></div><div><dt>Limitation</dt><dd>Not every other writer follows the same lock. The check uses stored movements and a zero baseline.</dd></div></dl></div>
+</div>
+</section>
+<section class="topic" id="lf-questions">
+<h4>Questions a professor might ask</h4>
+<div class="qa-list">
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What problem does LF Finance solve?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> It tracks what the school is owed and where its money actually moved. The system can report both without treating them as the same thing.</p>
+<div class="follow"><p><strong>Understand why.</strong> A fee promise isn’t cash.</p><p><strong>Harder follow-up.</strong> What does a transfer do to total funds? <strong>Answer.</strong> It moves funds between accounts. The combined amount stays the same.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What did you personally contribute?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> I worked on [confirmed part]. I can show [change] and explain the outcome of [real check].</p>
+<div class="follow"><p><strong>Understand why.</strong> Name the starting scaffold and help you used.</p><p><strong>Harder follow-up.</strong> Can you claim production usage? <strong>Answer.</strong> Only with confirmed usage evidence.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> Why use a database function for payments?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The function can validate ownership and record the receipt in one transaction. That keeps the important rule close to the saved data.</p>
+<div class="follow"><p><strong>Understand why.</strong> The frontend can give feedback but cannot enforce a trusted write alone.</p><p><strong>Harder follow-up.</strong> Does a privileged function rely on RLS automatically? <strong>Answer.</strong> Check its grants and explicit caller/ownership validation.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How does a late payment work?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> A receipt booked today can point to last year’s enrollment. The school gets cash now, and the old unpaid fee goes down.</p>
+<div class="follow"><p><strong>Understand why.</strong> These are two different reporting questions.</p><p><strong>Harder follow-up.</strong> Is setting up that historical enrollment part of the same transaction? <strong>Answer.</strong> The UI may create it in an earlier call that can commit on its own.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What if the receipt commits but the response disappears?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> Resend the same request ID with the same details. The database can return the original receipt.</p>
+<div class="follow"><p><strong>Understand why.</strong> A timeout only means the caller did not get an answer.</p><p><strong>Harder follow-up.</strong> What if the amount changes with that ID? <strong>Answer.</strong> The mismatch is rejected.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How do you stop two separate payments overpaying?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The enrollment lock makes them check the amount in turn. With ₹100 due, two new ₹80 payments should not both succeed.</p>
+<div class="follow"><p><strong>Understand why.</strong> Request IDs alone cannot protect a shared debt.</p><p><strong>Harder follow-up.</strong> How would you verify it? <strong>Answer.</strong> Use two database sessions and check the final saved total.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How does a transfer stay balanced?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The database stores one transfer from account A to B. The app uses that row to calculate both effects.</p>
+<div class="follow"><p><strong>Understand why.</strong> There is no separate debit followed by a credit request.</p><p><strong>Harder follow-up.</strong> Does this ensure balances can never go negative? <strong>Answer.</strong> The source-account check covers this operation. Other writers may not take the same lock.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What tests actually ran?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The preparation review ran 12 focused checks against the TypeScript finance rules. SQL, browser and other tests exist in source.</p>
+<div class="follow"><p><strong>Understand why.</strong> These checks exercised calculations, including transfers and cutoff dates.</p><p><strong>Harder follow-up.</strong> Did they test live RLS or concurrent writes? <strong>Answer.</strong> Those need actual users and separate database sessions. The full suites were not rerun.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What is an important client/database mismatch?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The roster client sends historical fields that the effective import function omits. I’d check stored results before saying those fields import successfully.</p>
+<div class="follow"><p><strong>Understand why.</strong> An accepted request is weaker evidence than persisted values.</p><p><strong>Harder follow-up.</strong> How would you catch it? <strong>Answer.</strong> Send a fixture with an old amount and query the stored record.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What would you improve first?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> I’d move historical preparation and receipt creation into one database command. Then I’d test what remains after a forced failure.</p>
+<div class="follow"><p><strong>Understand why.</strong> The transaction must cover all database steps that should succeed together.</p><p><strong>Harder follow-up.</strong> What could survive today? <strong>Answer.</strong> An academic year, historical enrollment or carry adjustment created earlier.</p></div>
+</div>
+</div>
+</section>
+<section class="topic">
+<h4>When something goes wrong</h4>
+<div class="failure-list"><div class="tile"><h5>Lost payment reply</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>The receipt may already exist.</dd></div><div><dt>What the system does</dt><dd>A same-ID, same-details retry returns it.</dd></div><div><dt>Remaining limit</dt><dd>An altered ID cannot identify the original attempt.</dd></div></dl></div>
+<div class="tile"><h5>Two receipts compete</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>Both target the same unpaid enrollment.</dd></div><div><dt>What the system does</dt><dd>New payments check under the enrollment lock.</dd></div><div><dt>Remaining limit</dt><dd>Parallel-session testing is still needed.</dd></div></dl></div>
+<div class="tile"><h5>Late-payment setup only partly succeeds</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>The final payment fails after earlier writes.</dd></div><div><dt>What the system does</dt><dd>The individual payment transaction rolls back its changes.</dd></div><div><dt>Remaining limit</dt><dd>Earlier year, enrollment or carry changes can remain.</dd></div></dl></div></div>
+</section>
+<section class="topic">
+<h4>What to qualify</h4>
+<div class="caution"><p>The final receipt commits as one unit. Historical setup and archive target updates use separate calls. A backup restore can also lose the original request IDs.</p><p>The transfer guard has a limited scope. The full SQL and browser suites and production behavior were not verified in the preparation review.</p></div>
+</section>
+<p class="source">Source pointer · <a href="https://github.com/lfschool21/lf-finance-management-software/blob/d9446b23989ac48953e9f434802cb115ad355d7d/src/lib/finance-domain.test.ts#L1">Finance-domain checks</a></p>
+<section class="topic" id="lf-revise">
+<h4>Five-minute revision card</h4>
+<div class="remember"><dl class="facts"><div><dt>In one sentence</dt><dd>School finance app that separates debt, cash and movement between accounts.</dd></div><div><dt>Architecture</dt><dd>React → service → Supabase payment function → Postgres</dd></div><div><dt>Remember</dt><dd>Booking vs. original year · request ID · enrollment lock</dd></div><div><dt>Main challenge</dt><dd>A replay and a competing new payment need different checks.</dd></div><div><dt>Biggest limit</dt><dd>Historical preparation can partly commit.</dd></div></dl><dl class="fast-qa">
+<div class="small-qa"><dt>What is owed versus received?</dt><dd>An obligation versus a receipt.</dd></div>
+<div class="small-qa"><dt>Which year gets cash?</dt><dd>The booking year.</dd></div>
+<div class="small-qa"><dt>Which debt falls when an old fee is paid?</dt><dd>The balance on the earlier enrollment.</dd></div>
+<div class="small-qa"><dt>How does a retry work?</dt><dd>Reuse the same request ID and details.</dd></div>
+<div class="small-qa"><dt>Why one transfer row?</dt><dd>It drives both account effects.</dd></div>
+</dl></div>
+</section>
+<p class="jump-up"><a href="#quick-start">↑ Project index</a></p>
+</article>
+<article class="project" id="urban" aria-labelledby="urban-title">
+<header class="project-head">
+<div class="project-identity">
+<div class="project-mark" aria-hidden="true">🏘️</div>
+<div class="project-heading">
+<p class="project-category">Property search &amp; publishing</p>
+<h3 id="urban-title">UrbanEdge Land Space</h3>
+<p>Property search with private intake and controlled publication.</p>
+<p class="stack">Next.js · React · TypeScript · PostgreSQL · Supabase</p>
+</div>
+</div>
+<nav class="sheet-links" aria-label="UrbanEdge Land Space topics"><a href="#urban-flow">Workflow</a> <a href="#urban-concepts">Concepts</a> <a href="#urban-say">What to say</a> <a href="#urban-questions">Questions</a> <a href="#urban-revise">Revision card</a></nav>
+</header>
+<p class="sheet-intro">Visitors search for listings and can request help or a visit. Owners can submit properties for review. Staff manage leads, visits and the decision to publish, while public screens receive a smaller set of fields.</p>
+<section class="topic" id="urban-flow">
+<h4>How it works</h4>
+<figure class="flow flow--urban"><figcaption>Public search</figcaption><ol>
+<li>Visitor enters filters</li>
+<li>Server checks search input</li>
+<li>PostgreSQL selects matches</li>
+<li>Public projector picks fields</li>
+<li>Visitor sees listing cards</li>
+</ol></figure><ol class="steps">
+<li>Visitors supply filters. The server normalizes values before the database filters, sorts and pages matches.</li>
+<li>The server builds each card from allowed fields. Private inputs used to review a listing stay in a separate workflow.</li>
+<li>On the staff path, an active admin reviews readiness and requests publication. The principal database path groups changes. The fallback has separate calls.</li>
+</ol><div class="grid compare"><div class="tile"><h5>Public read</h5><p>Search → restricted result → listing card.</p></div><div class="tile"><h5>Staff write</h5><p>Private submission → active admin review → publication operation.</p></div></div>
+</section>
+<section class="topic" id="urban-concepts">
+<h4>Concepts to understand</h4>
+<div class="grid concepts">
+<div class="tile"><h5>Public projection</h5><dl class="facts"><div><dt>Meaning</dt><dd>Build a small response from allowed fields.</dd></div><div><dt>Why it matters</dt><dd>Reduce what the browser can see.</dd></div><div><dt>Project example</dt><dd>Public cards and details are constructed explicitly.</dd></div><div><dt>What could go wrong</dt><dd>Hiding a field after it reaches the browser leaves it visible in the response.</dd></div></dl></div>
+<div class="tile"><h5>Authorization</h5><dl class="facts"><div><dt>Meaning</dt><dd>Check whether a signed-in person can do this action.</dd></div><div><dt>Why it matters</dt><dd>Keep sensitive actions limited to staff.</dd></div><div><dt>Project example</dt><dd>Admin actions require an active admin profile.</dd></div><div><dt>What could go wrong</dt><dd>A direct request can bypass a hidden button.</dd></div></dl></div>
+<div class="tile"><h5>Workflow state</h5><dl class="facts"><div><dt>Meaning</dt><dd>A label says what can happen next.</dd></div><div><dt>Why it matters</dt><dd>Make valid changes and public claims easier to reason about.</dd></div><div><dt>Project example</dt><dd>Published, available and reviewed are separate states.</dd></div><div><dt>What could go wrong</dt><dd>One status can imply legal approval when a listing was merely published.</dd></div></dl></div>
+<div class="tile"><h5>Stale edit</h5><dl class="facts"><div><dt>Meaning</dt><dd>Someone changes data after you opened it.</dd></div><div><dt>Why it matters</dt><dd>Protect a newer edit from being silently replaced.</dd></div><div><dt>Project example</dt><dd>The principal path uses an expected timestamp and lock.</dd></div><div><dt>What could go wrong</dt><dd>A separate check and write can miss an edit in between.</dd></div></dl></div>
+<div class="tile"><h5>Idempotent intake</h5><dl class="facts"><div><dt>Meaning</dt><dd>A repeated form submission should create one record.</dd></div><div><dt>Why it matters</dt><dd>Keep network retries from creating duplicate leads.</dd></div><div><dt>Project example</dt><dd>Intake uses a key and payload hash to recognize matching retries.</dd></div><div><dt>What could go wrong</dt><dd>A changed payload with the same key must be rejected.</dd></div></dl></div>
+</div>
+</section>
+<section class="topic" id="urban-say">
+<h4>What I can say</h4>
+<div class="spoken"><div class="prompt"><p class="eyebrow">20–30 seconds · simple</p><p>Land Space is the newer property platform on my résumé. Visitors can search for properties, and staff can handle submissions, leads and visits. The key design issue is keeping private records separate from the listing information that visitors receive.</p></div><div class="prompt"><p class="eyebrow">60–90 seconds · technical</p><p>When a visitor searches, Next.js turns their filters into a checked query and sends it to a PostgreSQL search function. It builds public cards from selected fields before returning results. On the write side, an owner can submit information privately, and staff review it before it becomes a public listing.</p><p>An admin action checks the signed-in user and active admin profile before calling a service. The main publication path uses a database operation to check readiness and record changes. I’d qualify the fallback, which checks, updates and writes an audit entry in separate requests. I’d also check every public output, because a saved Maps embed can reveal a location even when private coordinates are omitted.</p></div></div>
+</section>
+<section class="topic">
+<h4>Engineering decisions</h4>
+<p class="source">These are engineering rationales. Use your confirmed role when explaining a choice you made.</p><div class="grid decisions">
+<div class="tile"><h5>Return selected public fields</h5><dl class="facts"><div><dt>Problem</dt><dd>Private and public records are mixed in the business domain.</dd></div><div><dt>Approach</dt><dd>Use restricted views and explicit card/detail projections.</dd></div><div><dt>Benefit</dt><dd>A new internal field stays private by default at that output.</dd></div><div><dt>Limitation</dt><dd>Maps embeds and documents are separate channels to review.</dd></div></dl></div>
+<div class="tile"><h5>Search through a provider</h5><dl class="facts"><div><dt>Problem</dt><dd>Filter validation and query logic need a home.</dd></div><div><dt>Approach</dt><dd>Normalize on the server and query Postgres through an adapter.</dd></div><div><dt>Benefit</dt><dd>The UI stays separate from the search engine.</dd></div><div><dt>Limitation</dt><dd>Performance at scale needs query plans and measurements.</dd></div></dl></div>
+<div class="tile"><h5>Use a database publication path</h5><dl class="facts"><div><dt>Problem</dt><dd>Publishing changes more than a label.</dd></div><div><dt>Approach</dt><dd>Check readiness and group core writes in a database operation.</dd></div><div><dt>Benefit</dt><dd>The principal path keeps the state change and history together.</dd></div><div><dt>Limitation</dt><dd>The fallback separates the timestamp check, update and audit.</dd></div></dl></div>
+</div>
+</section>
+<section class="topic" id="urban-questions">
+<h4>Questions a professor might ask</h4>
+<div class="qa-list">
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How is this different from Older Urban Edge?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> Land Space is the newer Next.js platform with public search and staff workflows. I’d keep its inspected source separate from the older React project.</p>
+<div class="follow"><p><strong>Understand why.</strong> The newer audit cannot prove how the older site worked.</p><p><strong>Harder follow-up.</strong> What can you show here? <strong>Answer.</strong> The search route, public projector and publication service in the newer snapshot.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What did you personally contribute?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> I handled [confirmed feature or change]. I can show [diff] and explain how I checked it.</p>
+<div class="follow"><p><strong>Understand why.</strong> Choose one specific public or admin workflow.</p><p><strong>Harder follow-up.</strong> Did you personally design all the policies? <strong>Answer.</strong> Describe only the changes you can support.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> Trace a search request.</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The server cleans up filters and queries Postgres for matching properties. It builds public cards from the allowed fields.</p>
+<div class="follow"><p><strong>Understand why.</strong> Filtering happens before the user sees a page of results.</p><p><strong>Harder follow-up.</strong> What if search fails? <strong>Answer.</strong> The source has an unavailable state distinct from a successful empty result.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How do you protect private fields?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The database and server both narrow the output. The public card has explicit fields, so I’d inspect the returned payload to confirm the boundary.</p>
+<div class="follow"><p><strong>Understand why.</strong> A field sent to React is already available to the browser.</p><p><strong>Harder follow-up.</strong> Can a saved Maps embed reveal location? <strong>Answer.</strong> Yes. The latest inspected policy can expose that embed even when legacy coordinates are omitted.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> Who can publish a property?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> An admin action checks the user and active profile. The service then checks whether the listing is ready for public display.</p>
+<div class="follow"><p><strong>Understand why.</strong> An admin menu is convenience. The server check protects the write.</p><p><strong>Harder follow-up.</strong> Does publishing certify legal due diligence? <strong>Answer.</strong> Publication and professional review are separate.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What if two staff members edit together?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The main path checks the expected timestamp while holding a row lock. The fallback checks before a separate update, so a stale edit can slip through that gap.</p>
+<div class="follow"><p><strong>Understand why.</strong> The question is whether the check and write share one protected boundary.</p><p><strong>Harder follow-up.</strong> What happens if audit fails on the fallback? <strong>Answer.</strong> The update can already have persisted. The fallback uses a separate audit insert.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What if a visitor submits twice?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The same request key and payload can return the saved result. Reusing the key with different details is a conflict.</p>
+<div class="follow"><p><strong>Understand why.</strong> Separate retry identity from content validation.</p><p><strong>Harder follow-up.</strong> What if email fails? <strong>Answer.</strong> Demand-intake notifications run after the core write. That separation alone does not guarantee delivery.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How did you test privacy?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The source contains Vitest, pgTAP and Playwright checks for boundaries. I’d verify the public response and attempt direct requests with a non-admin account.</p>
+<div class="follow"><p><strong>Understand why.</strong> The preparation review read tests and did not run them.</p><p><strong>Harder follow-up.</strong> Does a green main-path test cover the publication fallback? <strong>Answer.</strong> Exercise the fallback separately with stale data and an audit failure.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What’s the main lesson?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> Privacy depends on every output that leaves the server. Removing coordinates from one response doesn’t cover a map link or brochure.</p>
+<div class="follow"><p><strong>Understand why.</strong> Use one example and name the disclosure channel.</p><p><strong>Harder follow-up.</strong> Where would you check first? <strong>Answer.</strong> Compare the public response with the rendered links and documents.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What would you improve?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> I’d consolidate publication around one tested database path. I’d also test public map behavior explicitly.</p>
+<div class="follow"><p><strong>Understand why.</strong> Start with a reproducible stale-edit or disclosure check.</p><p><strong>Harder follow-up.</strong> What should the stale-edit test assert? <strong>Answer.</strong> The older write fails and the newer listing stays unchanged.</p></div>
+</div>
+</div>
+</section>
+<section class="topic">
+<h4>When something goes wrong</h4>
+<div class="failure-list"><div class="tile"><h5>A non-admin guesses an admin URL</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>The caller tries a direct write.</dd></div><div><dt>What the system does</dt><dd>Protected actions check identity and active admin status.</dd></div><div><dt>Remaining limit</dt><dd>Live migration and deployed access settings were not verified.</dd></div></dl></div>
+<div class="tile"><h5>Another admin edits before publish</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>The screen shows stale values.</dd></div><div><dt>What the system does</dt><dd>The main path checks the expected version under lock.</dd></div><div><dt>Remaining limit</dt><dd>A separate fallback check and update can race.</dd></div></dl></div>
+<div class="tile"><h5>Map reveals more than the card</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>A saved embed can pinpoint a listing.</dd></div><div><dt>What the system does</dt><dd>The public projector omits private coordinate fields.</dd></div><div><dt>Remaining limit</dt><dd>An embed is a separate disclosure channel allowed by the latest inspected policy.</dd></div></dl></div></div>
+</section>
+<section class="topic">
+<h4>What to qualify</h4>
+<div class="caution"><p>Describe publication as readiness for display. The source does not establish legal approval, live privacy behavior or tested fallback atomicity.</p></div>
+</section>
+<p class="source">Source pointer · <a href="https://github.com/urbanedgelivingspace1/urbanlandlivingspace-website-VedPatel-Project/blob/a1ae2e813d32b6d2c62865d1491bdb4f80ea99aa/features/properties/queries/public-property-projector.ts#L131">Public property projection</a></p>
+<section class="topic" id="urban-revise">
+<h4>Five-minute revision card</h4>
+<div class="remember"><dl class="facts"><div><dt>In one sentence</dt><dd>Property search and a private staff workflow for turning submissions into listings.</dd></div><div><dt>Architecture</dt><dd>Next.js → PostgreSQL search → public projection → listing cards</dd></div><div><dt>Remember</dt><dd>Public projection · active admin · stale edit</dd></div><div><dt>Main challenge</dt><dd>Keep private data out and publish the intended version.</dd></div><div><dt>Biggest limit</dt><dd>The publication fallback splits check, update and audit.</dd></div></dl><dl class="fast-qa">
+<div class="small-qa"><dt>Where are filters applied?</dt><dd>A PostgreSQL search function behind the server.</dd></div>
+<div class="small-qa"><dt>What reaches the browser?</dt><dd>A selected public projection.</dd></div>
+<div class="small-qa"><dt>Who can publish?</dt><dd>An authorized active admin.</dd></div>
+<div class="small-qa"><dt>Can a map disclose location?</dt><dd>A saved public embed can.</dd></div>
+<div class="small-qa"><dt>What is separate in the fallback?</dt><dd>Timestamp check, update and audit.</dd></div>
+</dl></div>
+</section>
+<p class="jump-up"><a href="#quick-start">↑ Project index</a></p>
+</article>
+<article class="project" id="pawn" aria-labelledby="pawn-title">
+<header class="project-head">
+<div class="project-identity">
+<div class="project-mark" aria-hidden="true">🔐</div>
+<div class="project-heading">
+<p class="project-category">Lending &amp; collateral</p>
+<h3 id="pawn-title">PawnTrack</h3>
+<p>Customer, collateral, loan, payment and due tracking for lending teams.</p>
+<p class="stack">React · TypeScript · Supabase · PostgreSQL · Deno</p>
+</div>
+</div>
+<nav class="sheet-links" aria-label="PawnTrack topics"><a href="#pawn-flow">Workflow</a> <a href="#pawn-concepts">Concepts</a> <a href="#pawn-say">What to say</a> <a href="#pawn-questions">Questions</a> <a href="#pawn-revise">Revision card</a></nav>
+</header>
+<p class="sheet-intro">Lending staff track who borrowed money, what they pledged and when payments are due. A customer can have loans, and each loan can have payments, dues and collateral. The application includes a local demo and a cloud provider.</p>
+<section class="topic" id="pawn-flow">
+<h4>How it works</h4>
+<figure class="flow flow--pawn"><figcaption>Cloud payment and its follow-up write</figcaption><ol>
+<li>Staff selects a loan</li>
+<li>React calls the selected provider</li>
+<li>Payment row is written</li>
+<li>Principal or interest due is updated</li>
+<li>UI refreshes records</li>
+</ol></figure><ol class="steps">
+<li>In cloud mode, membership policies scope the rows. Demo mode uses local persistence and has its own provider behavior.</li>
+<li>The provider writes the receipt first. A principal payment then changes the loan balance. An interest payment marks the oldest open due paid.</li>
+<li>A separate scheduled function can generate dues. A due key is unique for a loan, date and type. Notifications and advancement are separate effects.</li>
+</ol><div class="grid compare"><div class="tile"><h5>Customer → loan</h5><p>One loan can have separate payments, due records and collateral.</p></div><div class="tile"><h5>Queue → replay</h5><p>A replay ID stays local. Cloud writes lack that duplicate safeguard.</p></div></div>
+</section>
+<section class="topic" id="pawn-concepts">
+<h4>Concepts to understand</h4>
+<div class="grid concepts">
+<div class="tile"><h5>Tenant isolation</h5><dl class="facts"><div><dt>Meaning</dt><dd>One organization should see only its records.</dd></div><div><dt>Why it matters</dt><dd>Keep different businesses’ records separate.</dd></div><div><dt>Project example</dt><dd>Database policies use the current user’s organization.</dd></div><div><dt>What could go wrong</dt><dd>Trusting an org ID from React could expose another group’s loans.</dd></div></dl></div>
+<div class="tile"><h5>Atomic write</h5><dl class="facts"><div><dt>Meaning</dt><dd>Related changes commit together or roll back together.</dd></div><div><dt>Why it matters</dt><dd>Keep receipts, balances and allocations in agreement.</dd></div><div><dt>Project example</dt><dd>PawnTrack’s cloud payment and balance update are separate.</dd></div><div><dt>What could go wrong</dt><dd>A saved receipt can disagree with the remaining loan.</dd></div></dl></div>
+<div class="tile"><h5>Unique due identity</h5><dl class="facts"><div><dt>Meaning</dt><dd>One business event has one record key.</dd></div><div><dt>Why it matters</dt><dd>Allow repeated job attempts without repeating that record.</dd></div><div><dt>Project example</dt><dd>A loan, due date and due type can have one matching due row.</dd></div><div><dt>What could go wrong</dt><dd>Other steps can still repeat, including notifications.</dd></div></dl></div>
+<div class="tile"><h5>Offline replay</h5><dl class="facts"><div><dt>Meaning</dt><dd>Store an operation and send it later.</dd></div><div><dt>Why it matters</dt><dd>Recover work when connectivity returns.</dd></div><div><dt>Project example</dt><dd>Queue scaffolding persists and replays pending operations.</dd></div><div><dt>What could go wrong</dt><dd>A lost response can cause a duplicate if the database never sees the queue ID.</dd></div></dl></div>
+<div class="tile"><h5>Storage ownership</h5><dl class="facts"><div><dt>Meaning</dt><dd>Access to an attachment should follow access to its record.</dd></div><div><dt>Why it matters</dt><dd>Protect media as well as database rows.</dd></div><div><dt>Project example</dt><dd>Collateral files use loan-based paths and storage policies.</dd></div><div><dt>What could go wrong</dt><dd>A guessed object key or overly broad cache can expose private media.</dd></div></dl></div>
+</div>
+</section>
+<section class="topic" id="pawn-say">
+<h4>What I can say</h4>
+<div class="spoken"><div class="prompt"><p class="eyebrow">20–30 seconds · simple</p><p>PawnTrack is a lending management app for tracking customers, loans, collateral and payments. It has a local demo and a Supabase mode for organization data. The tricky part is keeping a payment, its loan balance and its due record consistent.</p></div><div class="prompt"><p class="eyebrow">60–90 seconds · technical</p><p>A staff member records a payment in React, which sends the operation to the selected provider. In the cloud path, the provider inserts the payment and then changes the principal or marks an interest due paid. Those are separate operations, so a receipt can be saved while a follow-up change fails.</p><p>For access, database policies scope rows to the caller’s organization, with additional safeguards in later migrations. A scheduled function creates interest dues, and a unique key protects one loan, date and due type. The queue can store and replay operations, but the reviewed screens call providers directly. The queue ID also doesn’t reach the database write, so I’d describe offline sync as incomplete.</p></div></div>
+</section>
+<section class="topic">
+<h4>Engineering decisions</h4>
+<p class="source">These are engineering rationales. Use your confirmed role when explaining a choice you made.</p><div class="grid decisions">
+<div class="tile"><h5>Organization checks in the database</h5><dl class="facts"><div><dt>Problem</dt><dd>The browser’s organization value is editable.</dd></div><div><dt>Approach</dt><dd>Use membership-scoped policies and later safeguards for organization assignment.</dd></div><div><dt>Benefit</dt><dd>Protection applies to direct database API calls.</dd></div><div><dt>Limitation</dt><dd>It depends on effective migrations and consistent record relationships.</dd></div></dl></div>
+<div class="tile"><h5>Stage photos until a loan exists</h5><dl class="facts"><div><dt>Problem</dt><dd>The storage path needs a real loan ID.</dd></div><div><dt>Approach</dt><dd>Preview the image locally and upload after creating the loan.</dd></div><div><dt>Benefit</dt><dd>Attachments can use their proper loan folder.</dd></div><div><dt>Limitation</dt><dd>A later storage write can fail after the loan was saved.</dd></div></dl></div>
+<div class="tile"><h5>Separate demo and cloud providers</h5><dl class="facts"><div><dt>Problem</dt><dd>Users need a demo without a live account.</dd></div><div><dt>Approach</dt><dd>Give the same screens two persistence providers.</dd></div><div><dt>Benefit</dt><dd>The demo can work with locally stored data.</dd></div><div><dt>Limitation</dt><dd>Duplicated behavior can drift and demo mode does not prove cloud behavior.</dd></div></dl></div>
+</div>
+</section>
+<section class="topic" id="pawn-questions">
+<h4>Questions a professor might ask</h4>
+<div class="qa-list">
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What does PawnTrack track?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> It tracks customers, loans, collateral, payments and interest dues. A payment belongs to a loan, and the loan belongs to an organization.</p>
+<div class="follow"><p><strong>Understand why.</strong> Think about which record each action changes.</p><p><strong>Harder follow-up.</strong> What prevents a duplicate generated due row? <strong>Answer.</strong> A unique key on loan, date and due type.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What did you personally contribute?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> My role was [confirmed extension or fix]. I can show the earlier behavior, my change and [verification].</p>
+<div class="follow"><p><strong>Understand why.</strong> Distinguish the starting scaffold from your work.</p><p><strong>Harder follow-up.</strong> What if you used an existing provider? <strong>Answer.</strong> Say what it already did and what you changed.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How do you separate organizations?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The database scopes rows through the signed-in user’s membership. Later migrations protect organization assignment and add controlled setup.</p>
+<div class="follow"><p><strong>Understand why.</strong> The browser’s organization filter alone cannot protect data.</p><p><strong>Harder follow-up.</strong> Can you prove isolation from the standalone schema alone? <strong>Answer.</strong> Later migrations and applied policies matter. A two-organization test would check actual behavior.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How is a principal payment recorded?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The cloud provider saves the receipt and then updates the loan balance. At zero it closes the loan.</p>
+<div class="follow"><p><strong>Understand why.</strong> The two writes can fail independently.</p><p><strong>Harder follow-up.</strong> What if two payments read the same old balance? <strong>Answer.</strong> One deduction could overwrite the other. A transaction with a loan lock is a proposed repair.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> Can offline payments safely retry?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The queue can store and replay entries, but the inspected screens call providers directly. The queue ID also stays local, so duplicate-free cloud replay is unproven.</p>
+<div class="follow"><p><strong>Understand why.</strong> A commit can succeed even if the browser receives no reply.</p><p><strong>Harder follow-up.</strong> How would you repair that? <strong>Answer.</strong> Pass a stable operation ID to a transactional write and make repeats return the first result.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> Can scheduled dues duplicate?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The unique key prevents duplicate due rows for the same loan, date and type. Schedule advancement and notifications are separate writes.</p>
+<div class="follow"><p><strong>Understand why.</strong> One unique record cannot protect every related side effect.</p><p><strong>Harder follow-up.</strong> Was the deployed job verified? <strong>Answer.</strong> Its handler exists in source. Invocation and protection were not verified.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How do interest payments choose a due?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The provider marks the oldest open due paid. The dashboard can also mark a selected due in a separate call.</p>
+<div class="follow"><p><strong>Understand why.</strong> This can make the chosen due and the settled due disagree.</p><p><strong>Harder follow-up.</strong> What if ₹100 is paid against a ₹2,000 due? <strong>Answer.</strong> The inspected path can mark the due paid in full. It lacks proper partial allocation.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How was it tested?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The repository includes 17 Vitest cases and a Playwright demo flow. I’d separate test source from passing results and actual tenant checks.</p>
+<div class="follow"><p><strong>Understand why.</strong> A demo suite cannot prove cloud permissions.</p><p><strong>Harder follow-up.</strong> Did the browser test assert the exact new balance? <strong>Answer.</strong> The reviewed payment step checked the ledger view. It did not establish that invariant.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What was technically difficult?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> A receipt and a balance represent the same business event but are written separately. The hard part is deciding what must succeed together.</p>
+<div class="follow"><p><strong>Understand why.</strong> You can explain this from source without a personal incident story.</p><p><strong>Harder follow-up.</strong> Do database transactions cover images too? <strong>Answer.</strong> Object storage needs its own cleanup or recovery path.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What would you improve first?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> I’d make cloud payment and allocation one checked database command. I’d verify the receipt, balance and due after a forced failure or duplicate retry.</p>
+<div class="follow"><p><strong>Understand why.</strong> Assert saved effects, not just a green message.</p><p><strong>Harder follow-up.</strong> What setup would you verify first? <strong>Answer.</strong> Replay migrations on an empty test database and check actual organization policies.</p></div>
+</div>
+</div>
+</section>
+<section class="topic">
+<h4>When something goes wrong</h4>
+<div class="failure-list"><div class="tile"><h5>Connection drops after save</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>The browser may retry a committed create.</dd></div><div><dt>What the system does</dt><dd>The queue retains entries when replay throws.</dd></div><div><dt>Remaining limit</dt><dd>The database receives no queue ID for deduplication.</dd></div></dl></div>
+<div class="tile"><h5>Receipt saves, loan update fails</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>The ledger and balance can disagree.</dd></div><div><dt>What the system does</dt><dd>The provider checks the initial insert error.</dd></div><div><dt>Remaining limit</dt><dd>Later reconciliation errors may be unchecked.</dd></div></dl></div>
+<div class="tile"><h5>Due job repeats</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>The same loan/date/type is processed again.</dd></div><div><dt>What the system does</dt><dd>A unique key protects that due row.</dd></div><div><dt>Remaining limit</dt><dd>Notifications and date changes lack the same guarantee.</dd></div></dl></div></div>
+</section>
+<section class="topic">
+<h4>What to qualify</h4>
+<div class="caution"><p>Cloud authorization, job protection, clean migration bootstrap and full offline mutation/replay were unverified. The findings are risks from source, with no observed production incident.</p></div>
+</section>
+<p class="source">Source pointer · <a href="https://github.com/vedpatel-real-ai/pawnstone-vault/blob/06a02e6877b4a49c9a0977c5d4a31c0234ea2b8d/src/data/supabase/supabaseProvider.ts">Supabase payment provider</a></p>
+<section class="topic" id="pawn-revise">
+<h4>Five-minute revision card</h4>
+<div class="remember"><dl class="facts"><div><dt>In one sentence</dt><dd>Lending tracker with organization-scoped data, local demo and scheduled dues.</dd></div><div><dt>Architecture</dt><dd>React → demo or cloud provider → receipt → separate loan/due change</dd></div><div><dt>Remember</dt><dd>Tenant policy · unique due · replay identity</dd></div><div><dt>Main challenge</dt><dd>Keep the ledger and balance consistent on retries.</dd></div><div><dt>Biggest limit</dt><dd>Queue IDs never reach the cloud write.</dd></div></dl><dl class="fast-qa">
+<div class="small-qa"><dt>How are loans scoped?</dt><dd>By the caller’s organization through policies.</dd></div>
+<div class="small-qa"><dt>Can a receipt save alone?</dt><dd>Yes. Follow-up updates are separate.</dd></div>
+<div class="small-qa"><dt>What is unique for a due?</dt><dd>Loan, date and type.</dd></div>
+<div class="small-qa"><dt>Does demo prove cloud sync?</dt><dd>Demo only demonstrates its own local behavior.</dd></div>
+<div class="small-qa"><dt>First fix?</dt><dd>Transactional payment with a stable request ID.</dd></div>
+</dl></div>
+</section>
+<p class="jump-up"><a href="#quick-start">↑ Project index</a></p>
+</article>
+<article class="project" id="voice" aria-labelledby="voice-title">
+<header class="project-head">
+<div class="project-identity">
+<div class="project-mark" aria-hidden="true">🎙️</div>
+<div class="project-heading">
+<p class="project-category">Mac dictation &amp; audio</p>
+<h3 id="voice-title">VoiceToText</h3>
+<p>Local macOS dictation with speech checks and text insertion.</p>
+<p class="stack">Python · PyObjC · NumPy · sounddevice · MLX Whisper</p>
+</div>
+</div>
+<nav class="sheet-links" aria-label="VoiceToText topics"><a href="#voice-flow">Workflow</a> <a href="#voice-concepts">Concepts</a> <a href="#voice-say">What to say</a> <a href="#voice-questions">Questions</a> <a href="#voice-revise">Revision card</a></nav>
+</header>
+<p class="sheet-intro">A Mac user holds a shortcut to dictate text. The app records the microphone, recognizes speech locally and tries to insert the result into the current application. It shows recording and processing state through a small native indicator.</p>
+<section class="topic" id="voice-flow">
+<h4>How it works</h4>
+<figure class="flow flow--voice"><figcaption>Audio on a worker, insertion on the main thread</figcaption><ol>
+<li>Hold shortcut and speak</li>
+<li>Buffer microphone samples</li>
+<li>Check raw signal level</li>
+<li>Run MLX Whisper locally</li>
+<li>Check focus and insert</li>
+</ol></figure><ol class="steps">
+<li>Audio stays in memory on the reviewed path. On release, a worker checks duration and original signal strength, then runs the model on prepared samples.</li>
+<li>The worker checks available speech signals. Accepted text is handed to the main thread for native insertion.</li>
+<li>The injector checks permissions and compares the foreground app process. On a detected app switch, it attempts a copy fallback instead of auto-insertion.</li>
+</ol><div class="grid compare"><div class="tile"><h5>Permission check</h5><p>Can the app attempt insertion?</p></div><div class="tile"><h5>Destination check</h5><p>Is the foreground app process still the same?</p></div></div>
+</section>
+<section class="topic" id="voice-concepts">
+<h4>Concepts to understand</h4>
+<div class="grid concepts">
+<div class="tile"><h5>Raw signal level</h5><dl class="facts"><div><dt>Meaning</dt><dd>RMS measures how strong the signal is overall.</dd></div><div><dt>Why it matters</dt><dd>Avoid treating silence or low noise as speech.</dd></div><div><dt>Project example</dt><dd>The silence gate uses original RMS even when the audio is trimmed and normalized.</dd></div><div><dt>What could go wrong</dt><dd>Quiet speech surrounded by silence can be rejected.</dd></div></dl></div>
+<div class="tile"><h5>Inference</h5><dl class="facts"><div><dt>Meaning</dt><dd>Run a pretrained model on new input.</dd></div><div><dt>Why it matters</dt><dd>Use learned speech recognition on each new recording.</dd></div><div><dt>Project example</dt><dd>MLX Whisper converts audio into text locally.</dd></div><div><dt>What could go wrong</dt><dd>Noise or silence can still produce plausible-looking text.</dd></div></dl></div>
+<div class="tile"><h5>State machine</h5><dl class="facts"><div><dt>Meaning</dt><dd>Only certain actions are allowed in each state.</dd></div><div><dt>Why it matters</dt><dd>Make overlapping actions predictable.</dd></div><div><dt>Project example</dt><dd>Recording cannot normally restart while the app is transcribing.</dd></div><div><dt>What could go wrong</dt><dd>A state lock does not serialize independent model warm-ups.</dd></div></dl></div>
+<div class="tile"><h5>Focus and permissions</h5><dl class="facts"><div><dt>Meaning</dt><dd>Permission allows an action. Focus identifies its destination.</dd></div><div><dt>Why it matters</dt><dd>Reduce accidental typing into the wrong target.</dd></div><div><dt>Project example</dt><dd>The app checks Accessibility permission and the app’s process ID.</dd></div><div><dt>What could go wrong</dt><dd>Two fields in the same app can share one process.</dd></div></dl></div>
+<div class="tile"><h5>Latency measurement</h5><dl class="facts"><div><dt>Meaning</dt><dd>Time one defined part of the workflow.</dd></div><div><dt>Why it matters</dt><dd>Identify which part of the experience takes time.</dd></div><div><dt>Project example</dt><dd>The app logs inference and release-to-insertion-return separately.</dd></div><div><dt>What could go wrong</dt><dd>Insertion returning does not prove the target accepted text.</dd></div></dl></div>
+</div>
+</section>
+<section class="topic" id="voice-say">
+<h4>What I can say</h4>
+<div class="spoken"><div class="prompt"><p class="eyebrow">20–30 seconds · simple</p><p>VoiceToText is a local Mac dictation tool. I hold a shortcut, speak, and release it so a pretrained Whisper model can recognize the audio. The app checks for quiet recordings and tries to avoid typing into a different application.</p></div><div class="prompt"><p class="eyebrow">60–90 seconds · technical</p><p>The shortcut starts a microphone stream and stores audio in memory. On release, the app stops recording and starts a transcription worker. It uses the original signal level to screen out silence, and can trim and normalize the buffer sent to MLX Whisper. The model returns text and signals that help the app decide whether to insert it.</p><p>The actual insertion is scheduled on the main thread. Before typing or pasting, it checks Accessibility permission and compares the frontmost app’s process ID with the recorded one. That catches some app switches, but it can’t detect every change of field within the same app. The reviewed state guard blocks normal new starts while transcribing. I couldn’t point to a FIFO or a dedicated inference lock in that version.</p></div></div>
+</section>
+<section class="topic">
+<h4>Engineering decisions</h4>
+<p class="source">These are engineering rationales. Use your confirmed role when explaining a choice you made.</p><div class="grid decisions">
+<div class="tile"><h5>Screen silence before accepting text</h5><dl class="facts"><div><dt>Problem</dt><dd>Quiet input can waste work or create bad output.</dd></div><div><dt>Approach</dt><dd>Use duration, raw RMS and model speech signals.</dd></div><div><dt>Benefit</dt><dd>The app can withhold low-quality results.</dd></div><div><dt>Limitation</dt><dd>Thresholds need checking with different microphones and voices.</dd></div></dl></div>
+<div class="tile"><h5>Move recognition off the UI thread</h5><dl class="facts"><div><dt>Problem</dt><dd>Model work can take time.</dd></div><div><dt>Approach</dt><dd>Use a per-recording worker and hand insertion back to the main thread.</dd></div><div><dt>Benefit</dt><dd>The interface can show useful progress during recognition.</dd></div><div><dt>Limitation</dt><dd>Warm-up and worker lifecycle are separate concerns.</dd></div></dl></div>
+<div class="tile"><h5>Check destination before typing</h5><dl class="facts"><div><dt>Problem</dt><dd>The user can switch apps while waiting.</dd></div><div><dt>Approach</dt><dd>Compare app IDs and use a copy fallback on a detected change.</dd></div><div><dt>Benefit</dt><dd>This avoids some wrong-app insertions.</dd></div><div><dt>Limitation</dt><dd>Same-app field changes and failed focus lookups remain possible.</dd></div></dl></div>
+</div>
+</section>
+<section class="topic" id="voice-questions">
+<h4>Questions a professor might ask</h4>
+<div class="qa-list">
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What does VoiceToText do?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> It turns microphone audio into text on the Mac. The useful engineering problem is delivering that text safely to the current app.</p>
+<div class="follow"><p><strong>Understand why.</strong> There is no separate inference backend in the inspected path.</p><p><strong>Harder follow-up.</strong> Did you train the model? <strong>Answer.</strong> It uses pretrained MLX Whisper. Vocabulary is a prompt hint.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What did you personally contribute?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> I worked on [confirmed pipeline or native behavior]. I can show [function] and the result of [check I performed].</p>
+<div class="follow"><p><strong>Understand why.</strong> A local demo and a source trace support different claims.</p><p><strong>Harder follow-up.</strong> Can you show the 157 tests? <strong>Answer.</strong> Only if you recover the exact suite, revision and results.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> Walk me through the audio pipeline.</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> A shortcut records raw samples. On release, a worker checks the signal, prepares the buffer and runs Whisper.</p>
+<div class="follow"><p><strong>Understand why.</strong> The final text must also pass output checks.</p><p><strong>Harder follow-up.</strong> Why use RMS before normalization? <strong>Answer.</strong> Normalization raises levels and could make quiet noise appear stronger.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> Why use MLX Whisper?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> It runs pretrained speech recognition locally on the Mac. That supports a local workflow without sending this recording to a separate service.</p>
+<div class="follow"><p><strong>Understand why.</strong> The choice can be explained without claiming measured speed.</p><p><strong>Harder follow-up.</strong> What is the default language scope? <strong>Answer.</strong> The default model is English-specific.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> Does the app serialize inference?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The state machine blocks normal new recordings while transcription is active. The reviewed snapshot uses a worker per recording and has separate warm-up threads.</p>
+<div class="follow"><p><strong>Understand why.</strong> State coordination and exclusive model ownership are different.</p><p><strong>Harder follow-up.</strong> Where is the FIFO? <strong>Answer.</strong> The inspected version did not contain one.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What happens if I change apps?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> Before insertion the app compares the current app’s process ID with the one it captured. On a detected switch it attempts to copy the result instead.</p>
+<div class="follow"><p><strong>Understand why.</strong> It catches an app change, not necessarily a target-field change.</p><p><strong>Harder follow-up.</strong> What if I switch tabs in the same app? <strong>Answer.</strong> The process can be the same, so the check can pass.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> Does Accessibility check the target field?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> It checks whether the app has permission to perform the action. It doesn’t establish that the focused field is editable.</p>
+<div class="follow"><p><strong>Understand why.</strong> Permission and destination are separate.</p><p><strong>Harder follow-up.</strong> Does Cmd-V returning prove text arrived? <strong>Answer.</strong> No confirmation of the target’s insertion is established.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How did you test it?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The review parsed all ten Python files for syntax. It did not exercise the mic, MLX model or native insertion.</p>
+<div class="follow"><p><strong>Understand why.</strong> Syntax checks catch a narrow class of problems.</p><p><strong>Harder follow-up.</strong> Can you quote verified p95 latency? <strong>Answer.</strong> The instrumentation exists. No verified p95 number was available.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What is the main engineering lesson?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> Recognition quality and insertion safety are separate. A good transcript can still go to the wrong place.</p>
+<div class="follow"><p><strong>Understand why.</strong> Evaluate both the model result and what happened on screen.</p><p><strong>Harder follow-up.</strong> What would you test besides word error? <strong>Answer.</strong> Wrong-target, failed-insert and quiet-speech outcomes.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What would you improve first?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> I’d strengthen the destination check and cancel stale results. I’d validate it with app switches and two fields inside the same app.</p>
+<div class="follow"><p><strong>Understand why.</strong> Keep a copy option when the destination is uncertain.</p><p><strong>Harder follow-up.</strong> How would you address model concurrency? <strong>Answer.</strong> Give load, warm-up and inference one owner, with an explicit request policy.</p></div>
+</div>
+</div>
+</section>
+<section class="topic">
+<h4>When something goes wrong</h4>
+<div class="failure-list"><div class="tile"><h5>Quiet recording</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>Speech may be too short or too faint.</dd></div><div><dt>What the system does</dt><dd>The raw signal and duration gates can stop recognition.</dd></div><div><dt>Remaining limit</dt><dd>Real quiet speech can be rejected.</dd></div></dl></div>
+<div class="tile"><h5>Focus moves during inference</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>The old destination is no longer active.</dd></div><div><dt>What the system does</dt><dd>A detected app switch blocks insertion and attempts copying.</dd></div><div><dt>Remaining limit</dt><dd>A same-app change or a race after the check can still matter.</dd></div></dl></div>
+<div class="tile"><h5>App quits during work</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>An old result may arrive late.</dd></div><div><dt>What the system does</dt><dd>The app stops recording and resets state.</dd></div><div><dt>Remaining limit</dt><dd>The inspected shutdown path does not join workers or invalidate all callbacks.</dd></div></dl></div></div>
+</section>
+<section class="topic">
+<h4>What to qualify</h4>
+<div class="caution"><p>The inspected version does not substantiate FIFO inference, a dedicated inference lock, 157 passing tests or measured latency. Native behavior remains separate from syntax checks.</p></div>
+</section>
+<p class="source">Source pointer · <a href="https://github.com/vedpatel-real-ai/voice-to-text/blob/785b8866916173196939ed6a069e442b7f1df4b0/injection.py#L90">Native insertion path</a></p>
+<section class="topic" id="voice-revise">
+<h4>Five-minute revision card</h4>
+<div class="remember"><dl class="facts"><div><dt>In one sentence</dt><dd>Mac dictation that records, recognizes and attempts to insert text locally.</dd></div><div><dt>Architecture</dt><dd>Shortcut → audio buffer → MLX Whisper → main-thread injector</dd></div><div><dt>Remember</dt><dd>Raw RMS · state guard · process ID</dd></div><div><dt>Main challenge</dt><dd>Finish recognition without typing into an unintended destination.</dd></div><div><dt>Biggest limit</dt><dd>App ID cannot distinguish fields in the same app.</dd></div></dl><dl class="fast-qa">
+<div class="small-qa"><dt>What blocks silence?</dt><dd>Raw signal level and duration checks.</dd></div>
+<div class="small-qa"><dt>Does it train Whisper?</dt><dd>It runs a pretrained model.</dd></div>
+<div class="small-qa"><dt>Is there a verified FIFO?</dt><dd>No FIFO in the inspected snapshot.</dd></div>
+<div class="small-qa"><dt>What does Accessibility prove?</dt><dd>The process has permission to attempt insertion.</dd></div>
+<div class="small-qa"><dt>What actually ran?</dt><dd>Syntax parsing of ten Python files.</dd></div>
+</dl></div>
+</section>
+<p class="jump-up"><a href="#quick-start">↑ Project index</a></p>
+</article>
+<article class="project" id="atlas" aria-labelledby="atlas-title">
+<header class="project-head">
+<div class="project-identity">
+<div class="project-mark" aria-hidden="true">🧭</div>
+<div class="project-heading">
+<p class="project-category">Local AI &amp; tool routing</p>
+<h3 id="atlas-title">ATLAS</h3>
+<p>Local assistant that routes requests to tools or a language model.</p>
+<p class="stack">Python · FastAPI · Ollama · SQLite</p>
+</div>
+</div>
+<nav class="sheet-links" aria-label="ATLAS topics"><a href="#atlas-flow">Workflow</a> <a href="#atlas-concepts">Concepts</a> <a href="#atlas-say">What to say</a> <a href="#atlas-questions">Questions</a> <a href="#atlas-revise">Revision card</a></nav>
+</header>
+<p class="sheet-intro">ATLAS helps a developer run local commands and inspect projects. It can match familiar requests directly or ask a local model to pick tools. It also tracks jobs and asks for approval before running higher-risk steps.</p>
+<section class="topic" id="atlas-flow">
+<h4>How it works</h4>
+<figure class="flow flow--atlas"><figcaption>One request, several possible routes</figcaption><ol>
+<li>User sends a command</li>
+<li>Rule matches or model routes</li>
+<li>Registry maps known tools</li>
+<li>Risky plan waits for approval</li>
+<li>Run steps and return results</li>
+</ol></figure><ol class="steps">
+<li>FastAPI receives the request. The matcher handles known patterns. The local router can return a step list, and some requests go to reasoning.</li>
+<li>The server checks names against the tool registry. A higher-risk list requires approval tied to its exact steps.</li>
+<li>Tools run in order and return outcomes. SQLite records jobs and history. Saved progress does not restart a stopped worker.</li>
+</ol><div class="grid compare"><div class="tile"><h5>Routing choices</h5><p>Known command → rule. Tool intent → model router. Reasoning → generation path.</p></div><div class="tile"><h5>Action gate</h5><p>Higher-risk tool steps wait for approval tied to the specific plan.</p></div></div>
+</section>
+<section class="topic" id="atlas-concepts">
+<h4>Concepts to understand</h4>
+<div class="grid concepts">
+<div class="tile"><h5>Routing</h5><dl class="facts"><div><dt>Meaning</dt><dd>Choose how to handle a request.</dd></div><div><dt>Why it matters</dt><dd>Use the simplest path that can handle the request.</dd></div><div><dt>Project example</dt><dd>Rules handle known commands and the model proposes other tool calls.</dd></div><div><dt>What could go wrong</dt><dd>A partial pattern could ignore an important clause.</dd></div></dl></div>
+<div class="tile"><h5>Tool contract</h5><dl class="facts"><div><dt>Meaning</dt><dd>A tool expects specific names, types and values.</dd></div><div><dt>Why it matters</dt><dd>Keep model suggestions compatible with executable functions.</dd></div><div><dt>Project example</dt><dd>The router receives argument names from Python signatures.</dd></div><div><dt>What could go wrong</dt><dd>Valid JSON can still contain an invalid path or wrong argument.</dd></div></dl></div>
+<div class="tile"><h5>Bound approval</h5><dl class="facts"><div><dt>Meaning</dt><dd>Approval applies to the exact action shown.</dd></div><div><dt>Why it matters</dt><dd>Keep consent tied to what the person actually saw.</dd></div><div><dt>Project example</dt><dd>A short-lived one-use token is tied to a hash of the step list.</dd></div><div><dt>What could go wrong</dt><dd>A changed plan could otherwise reuse old consent.</dd></div></dl></div>
+<div class="tile"><h5>Static import graph</h5><dl class="facts"><div><dt>Meaning</dt><dd>Files are nodes and imports are arrows.</dd></div><div><dt>Why it matters</dt><dd>Inspect relationships directly in the repository.</dd></div><div><dt>Project example</dt><dd>Python parsing and relative JS/TS matching build the graph. DFS looks for cycles.</dd></div><div><dt>What could go wrong</dt><dd>Dynamic imports or unresolved aliases can be missed.</dd></div></dl></div>
+<div class="tile"><h5>Benchmark measurement</h5><dl class="facts"><div><dt>Meaning</dt><dd>Pick a measurement that answers the question.</dd></div><div><dt>Why it matters</dt><dd>Draw a conclusion that the recorded result can support.</dd></div><div><dt>Project example</dt><dd>The document report tracks characters, input tokens and duration separately.</dd></div><div><dt>What could go wrong</dt><dd>Fewer characters can be misreported as fewer tokens.</dd></div></dl></div>
+</div>
+</section>
+<section class="topic" id="atlas-say">
+<h4>What I can say</h4>
+<div class="spoken"><div class="prompt"><p class="eyebrow">20–30 seconds · simple</p><p>ATLAS is an experimental local assistant for desktop and developer tasks. Simple commands can go straight to a known tool. For other requests, a local model can suggest a list of actions, which the server checks before executing.</p></div><div class="prompt"><p class="eyebrow">60–90 seconds · technical</p><p>A request comes into FastAPI. The service first tries a rule for known commands, like opening an app. If that misses, it can ask an Ollama model to pick tools and arguments from a registry, or use the reasoning path. The server resolves known tool names and runs a flat sequence of steps.</p><p>For a risky action, it asks for approval and binds that approval to the proposed list. SQLite keeps records of interactions, approvals and job progress. One tool builds an import graph from real files, which gives more concrete evidence than asking the model to guess a repository’s structure. The comparison report showed fewer document characters, but both paths reported the same input-token count.</p></div></div>
+</section>
+<section class="topic">
+<h4>Engineering decisions</h4>
+<p class="source">These are engineering rationales. Use your confirmed role when explaining a choice you made.</p><div class="grid decisions">
+<div class="tile"><h5>Try simple matching first</h5><dl class="facts"><div><dt>Problem</dt><dd>Calling a model for every known command adds work.</dd></div><div><dt>Approach</dt><dd>Use rules before model routing.</dd></div><div><dt>Benefit</dt><dd>Matching requests skip inference.</dd></div><div><dt>Limitation</dt><dd>Rules can be brittle when phrasing is ambiguous.</dd></div></dl></div>
+<div class="tile"><h5>Use a shared tool registry</h5><dl class="facts"><div><dt>Problem</dt><dd>The router and executor need the same list of tools.</dd></div><div><dt>Approach</dt><dd>Register names, functions, arguments and risk levels together.</dd></div><div><dt>Benefit</dt><dd>The system can describe and resolve tools consistently.</dd></div><div><dt>Limitation</dt><dd>A known name does not establish valid arguments or correct results.</dd></div></dl></div>
+<div class="tile"><h5>Bind approval to the plan</h5><dl class="facts"><div><dt>Problem</dt><dd>A generic approval can outlive its original purpose.</dd></div><div><dt>Approach</dt><dd>Store a one-use, expiring token tied to the ordered steps.</dd></div><div><dt>Benefit</dt><dd>Changing the list invalidates that approval.</dd></div><div><dt>Limitation</dt><dd>A nondeterministic reroute can invalidate a legitimate approval too.</dd></div></dl></div>
+</div>
+</section>
+<section class="topic" id="atlas-questions">
+<h4>Questions a professor might ask</h4>
+<div class="qa-list">
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What problem does ATLAS explore?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> It explores how a local assistant can choose and run real tools. The main idea is separating the routing decision from the actual action.</p>
+<div class="follow"><p><strong>Understand why.</strong> For code questions, a tool can inspect files directly.</p><p><strong>Harder follow-up.</strong> Is it a new model? <strong>Answer.</strong> It integrates pretrained local models and tools.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What did you personally contribute?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> My part was [confirmed routing, tool or benchmark work]. I can show [diff or run] and explain [check].</p>
+<div class="follow"><p><strong>Understand why.</strong> Separate implementation from assisted edits and evaluation.</p><p><strong>Harder follow-up.</strong> What counts as evidence for a benchmark role? <strong>Answer.</strong> A run you can explain with its inputs, settings and output.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> Why not call the model every time?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> Known commands can use a rule and skip model work. I’d measure coverage and false matches before calling it better overall.</p>
+<div class="follow"><p><strong>Understand why.</strong> The cheap path has a correctness cost if patterns are loose.</p><p><strong>Harder follow-up.</strong> What about a mixed command? <strong>Answer.</strong> The deterministic chain requires its segments to match. Ambiguous phrases still need testing.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> Are L0–L4 five different models?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> They label routes and outcomes. L1 is reserved, and the current reasoning tag uses the same 4B model as the router.</p>
+<div class="follow"><p><strong>Understand why.</strong> A label is different from a model or independent process.</p><p><strong>Harder follow-up.</strong> Are there 24 complete tools? <strong>Answer.</strong> There are 24 registry entries, including stubs.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How do you protect a dangerous tool call?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The server presents the proposed steps and requires a one-use token tied to them. Changing the plan prevents it from using the same approval.</p>
+<div class="follow"><p><strong>Understand why.</strong> Check meaning and permissions beyond JSON formatting.</p><p><strong>Harder follow-up.</strong> What if the tool fails midway? <strong>Answer.</strong> The planner lacks general rollback and can continue after failed steps.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How does it find an import cycle?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The tool builds a graph from file imports and walks it using a stack. An edge back to a file still on the current path reveals a cycle.</p>
+<div class="follow"><p><strong>Understand why.</strong> A finished node is different from one on the current path.</p><p><strong>Harder follow-up.</strong> What does it miss? <strong>Answer.</strong> Dynamic imports, some aliases and files outside scan limits.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> Did you demonstrate token savings?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The report showed fewer submitted document characters. Both paths reported 2,050 input tokens, and the tool path was slower in that run.</p>
+<div class="follow"><p><strong>Understand why.</strong> Compare measurements separately and score task success as well.</p><p><strong>Harder follow-up.</strong> Was a cause for equal token counts established? <strong>Answer.</strong> No cause was verified in the supplied review.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> Did 355 tests pass?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> Static inspection supports about 355 collected cases. The preparation review did not run pytest.</p>
+<div class="follow"><p><strong>Understand why.</strong> Counting cases and passing them are separate facts.</p><p><strong>Harder follow-up.</strong> Would green mocked tests prove live routing quality? <strong>Answer.</strong> Use separate real-model tasks with tool and argument accuracy checks.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How did you compare local model resources?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The harness records timing, loaded model size and memory or swap signals. I’d compare repeated runs under matched conditions.</p>
+<div class="follow"><p><strong>Understand why.</strong> The daemon process alone may miss memory used by the model runner.</p><p><strong>Harder follow-up.</strong> Which model won? <strong>Answer.</strong> The supplied source does not establish a reproducible 4B-versus-8B winner.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What would you improve first?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> I’d tighten argument validation and make dependent steps stop on a failed prerequisite. Then I’d test ambiguous requests and malformed outputs.</p>
+<div class="follow"><p><strong>Understand why.</strong> A tool call can be syntactically valid and unsafe.</p><p><strong>Harder follow-up.</strong> Would SQLite make background work durable? <strong>Answer.</strong> It preserves records. It does not restart running threads.</p></div>
+</div>
+</div>
+</section>
+<section class="topic">
+<h4>When something goes wrong</h4>
+<div class="failure-list"><div class="tile"><h5>Wrong argument from model</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>A tool can receive an unexpected key or value.</dd></div><div><dt>What the system does</dt><dd>The wrapper normalizes aliases and catches errors.</dd></div><div><dt>Remaining limit</dt><dd>Permissive normalization can still guess wrong.</dd></div></dl></div>
+<div class="tile"><h5>Plan changes after approval</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>A different action is proposed.</dd></div><div><dt>What the system does</dt><dd>The step-list hash must match the unused, unexpired token.</dd></div><div><dt>Remaining limit</dt><dd>The token checks content, not whether the person understood the action.</dd></div></dl></div>
+<div class="tile"><h5>Tool fails before a later step</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>A later action may rely on a missing result.</dd></div><div><dt>What the system does</dt><dd>The planner records the failed step.</dd></div><div><dt>Remaining limit</dt><dd>General dependency stopping and rollback are absent.</dd></div></dl></div></div>
+</section>
+<section class="topic">
+<h4>What to qualify</h4>
+<div class="caution"><p>Treat tiers, tool count, test count and benchmark results precisely. The supplied report is preliminary and provides no verified token savings or hardware winner.</p></div>
+</section>
+<p class="source">Source pointer · <a href="https://github.com/vedpatel-real-ai/ATLAS_Personal_AI_Assistant-System/blob/13471edf6b1701065382f263bdb92d39bfc80712/ATLAS-GitHub/main.py#L207">Routing and confirmations</a></p>
+<section class="topic" id="atlas-revise">
+<h4>Five-minute revision card</h4>
+<div class="remember"><dl class="facts"><div><dt>In one sentence</dt><dd>Local assistant that routes requests to real tools and gates higher-risk actions.</dd></div><div><dt>Architecture</dt><dd>FastAPI → rules or Ollama → registry → approval when needed → tools</dd></div><div><dt>Remember</dt><dd>Routing · exact-plan approval · static import graph</dd></div><div><dt>Main challenge</dt><dd>Choose the right action and verify that it actually succeeded.</dd></div><div><dt>Biggest limit</dt><dd>The benchmark reports smaller input text with equal token counts.</dd></div></dl><dl class="fast-qa">
+<div class="small-qa"><dt>Why use rules first?</dt><dd>Known requests can skip inference.</dd></div>
+<div class="small-qa"><dt>What binds approval?</dt><dd>A hash of the exact step list.</dd></div>
+<div class="small-qa"><dt>How do you spot a cycle?</dt><dd>An import edge back to the active DFS path.</dd></div>
+<div class="small-qa"><dt>Did 355 pass?</dt><dd>The estimate is from source inventory, not a run.</dd></div>
+<div class="small-qa"><dt>Were tokens saved?</dt><dd>Both reported 2,050 input tokens.</dd></div>
+</dl></div>
+</section>
+<p class="jump-up"><a href="#quick-start">↑ Project index</a></p>
+</article>
+<article class="project" id="smart" aria-labelledby="smart-title">
+<header class="project-head">
+<div class="project-identity">
+<div class="project-mark" aria-hidden="true">🗓️</div>
+<div class="project-heading">
+<p class="project-category">Task planning &amp; priorities</p>
+<h3 id="smart-title">Smart Flow AI Planner</h3>
+<p>Task planner with manual time blocks and rule-based priority.</p>
+<p class="stack">React · TypeScript · Supabase · Edge Functions</p>
+</div>
+</div>
+<nav class="sheet-links" aria-label="Smart Flow AI Planner topics"><a href="#smart-flow">Workflow</a> <a href="#smart-concepts">Concepts</a> <a href="#smart-say">What to say</a> <a href="#smart-questions">Questions</a> <a href="#smart-revise">Revision card</a></nav>
+</header>
+<p class="sheet-intro">A user adds tasks, sets due dates and organizes time blocks. The app shows recommendations, priority signals and task analytics. Users can drag tasks into time blocks. Users can explore through a local demo or use the cloud provider.</p>
+<section class="topic" id="smart-flow">
+<h4>How it works</h4>
+<figure class="flow flow--smart"><figcaption>Separate ranking path</figcaption><ol>
+<li>User adds task details</li>
+<li>Cloud ranking reads pending tasks</li>
+<li>Rules add points</li>
+<li>Scores are sorted and updates attempted</li>
+<li>Function returns top tasks</li>
+</ol></figure><ol class="steps">
+<li>React task operations use either the cloud adapter or the local demo adapter. The ranking function is a separate cloud path.</li>
+<li>The function checks the caller token, reads pending tasks and scores priority, due date, age and duration.</li>
+<li>It returns the top ten computed tasks and attempts score updates. The planner’s recommendations and manual time blocks are separate UI behavior.</li>
+</ol><div class="grid compare"><div class="tile"><h5>Ranking</h5><p>Points order tasks by priority and other inputs.</p></div><div class="tile"><h5>Planning</h5><p>Manual time blocks place tasks on the calendar.</p></div></div>
+</section>
+<section class="topic" id="smart-concepts">
+<h4>Concepts to understand</h4>
+<div class="grid concepts">
+<div class="tile"><h5>Heuristic</h5><dl class="facts"><div><dt>Meaning</dt><dd>A practical rule that gives a useful estimate.</dd></div><div><dt>Why it matters</dt><dd>Provide a ranking people can understand.</dd></div><div><dt>Project example</dt><dd>Priority and urgency add fixed points.</dd></div><div><dt>What could go wrong</dt><dd>A quick task can outrank a longer task that matters more.</dd></div></dl></div>
+<div class="tile"><h5>Ranking versus scheduling</h5><dl class="facts"><div><dt>Meaning</dt><dd>Order tasks first. Then decide if they fit specific times.</dd></div><div><dt>Why it matters</dt><dd>Keep priority separate from time and capacity.</dd></div><div><dt>Project example</dt><dd>The function ranks and the UI supports time blocks.</dd></div><div><dt>What could go wrong</dt><dd>A high-ranked task may be too long for the next free slot.</dd></div></dl></div>
+<div class="tile"><h5>Provider adapter</h5><dl class="facts"><div><dt>Meaning</dt><dd>One interface can use different storage behind it.</dd></div><div><dt>Why it matters</dt><dd>Reuse screens while supporting a demo.</dd></div><div><dt>Project example</dt><dd>The same screens can use the demo store or Supabase.</dd></div><div><dt>What could go wrong</dt><dd>Filters and errors can behave differently in the two modes.</dd></div></dl></div>
+<div class="tile"><h5>Caller context</h5><dl class="facts"><div><dt>Meaning</dt><dd>The database needs the right user identity on a query.</dd></div><div><dt>Why it matters</dt><dd>Make ownership policies apply to actual database calls.</dd></div><div><dt>Project example</dt><dd>The ranking function validates a token and filters by user.</dd></div><div><dt>What could go wrong</dt><dd>Token validation alone does not prove which role reached the database.</dd></div></dl></div>
+<div class="tile"><h5>Score freshness</h5><dl class="facts"><div><dt>Meaning</dt><dd>A stored score can age as the clock changes.</dd></div><div><dt>Why it matters</dt><dd>Keep the ranking responsive to the calendar.</dd></div><div><dt>Project example</dt><dd>An approaching deadline gets more points when recalculated.</dd></div><div><dt>What could go wrong</dt><dd>An old score can leave a newly urgent task too low.</dd></div></dl></div>
+</div>
+</section>
+<section class="topic" id="smart-say">
+<h4>What I can say</h4>
+<div class="spoken"><div class="prompt"><p class="eyebrow">20–30 seconds · simple</p><p>Smart Flow is a task planner with a local demo and a cloud mode. The ranking logic gives points for things like priority and due dates. I’d explain it as an inspectable rule system that helps order tasks, with a separate manual planning interface.</p></div><div class="prompt"><p class="eyebrow">60–90 seconds · technical</p><p>In React, the user creates tasks with fields such as priority, deadline and estimated duration. The app’s adapter sends data to local storage or the cloud provider. There’s a separate Edge Function path that identifies the caller, fetches pending tasks and adds points for priority, urgency, age and short duration. It sorts the tasks and tries to write the scores back.</p><p>The UI also shows rule-triggered suggestions. The displayed confidence is fixed, and the schedule button in the inspected path shows a message. I’d keep three ideas separate: ranking tasks, manually placing them into time blocks, and generating a feasible schedule. The supplied evidence supports the first two in source and leaves automated scheduling and live cloud behavior open.</p></div></div>
+</section>
+<section class="topic">
+<h4>Engineering decisions</h4>
+<p class="source">These are engineering rationales. Use your confirmed role when explaining a choice you made.</p><div class="grid decisions">
+<div class="tile"><h5>Use visible ranking rules</h5><dl class="facts"><div><dt>Problem</dt><dd>There is no established training dataset.</dd></div><div><dt>Approach</dt><dd>Add points for explicit task properties.</dd></div><div><dt>Benefit</dt><dd>A user can understand why a task ranked higher.</dd></div><div><dt>Limitation</dt><dd>The weights reflect choices and need evaluation.</dd></div></dl></div>
+<div class="tile"><h5>Share screens across providers</h5><dl class="facts"><div><dt>Problem</dt><dd>People need to try the planner without cloud setup.</dd></div><div><dt>Approach</dt><dd>Use cloud and local adapters with a similar interface.</dd></div><div><dt>Benefit</dt><dd>The same screens serve both modes.</dd></div><div><dt>Limitation</dt><dd>Matching calls do not guarantee matching behavior or data sync.</dd></div></dl></div>
+<div class="tile"><h5>Store scores after computing</h5><dl class="facts"><div><dt>Problem</dt><dd>The app may want to read a prior ranking.</dd></div><div><dt>Approach</dt><dd>The function loops over score updates.</dd></div><div><dt>Benefit</dt><dd>Stored values can be read later.</dd></div><div><dt>Limitation</dt><dd>Updates can fail separately and old values can go stale.</dd></div></dl></div>
+</div>
+</section>
+<section class="topic" id="smart-questions">
+<h4>Questions a professor might ask</h4>
+<div class="qa-list">
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What does Smart Flow actually do?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> It manages tasks, supports manual planning and gives rule-based suggestions. I’d describe its scoring separately from scheduling.</p>
+<div class="follow"><p><strong>Understand why.</strong> Priority ordering only says what comes first.</p><p><strong>Harder follow-up.</strong> Does the Generate Schedule control build a schedule? <strong>Answer.</strong> The inspected action shows a toast message.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What did you personally contribute?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> I worked on [confirmed task, provider or planner change]. I can show [code or diff] and what I checked.</p>
+<div class="follow"><p><strong>Understand why.</strong> Use one actual feature.</p><p><strong>Harder follow-up.</strong> Can you claim a measured productivity gain? <strong>Answer.</strong> Only with a real evaluation. The 70% claim is unsupported here.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How does ranking work?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> It doubles the priority weight and adds bonuses for urgency, age and short tasks. It sorts by the final score.</p>
+<div class="follow"><p><strong>Understand why.</strong> A High task due in two days, ten days old and estimated at 20 minutes scores 8.8.</p><p><strong>Harder follow-up.</strong> Can that beat a Critical task? <strong>Answer.</strong> Yes, an otherwise unboosted Critical task scores 8.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> Is the confidence a model prediction?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The displayed confidence is a fixed value. The ranking rules do not train a model or estimate a probability.</p>
+<div class="follow"><p><strong>Understand why.</strong> A precise percentage can look more meaningful than it is.</p><p><strong>Harder follow-up.</strong> How would you describe the UI honestly? <strong>Answer.</strong> A rule-triggered suggestion.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> Why use two providers?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> A demo lets people try the interface with local data. The cloud path uses Supabase for account data.</p>
+<div class="follow"><p><strong>Understand why.</strong> This avoids duplicating screens.</p><p><strong>Harder follow-up.</strong> Do demo changes sync when the cloud returns? <strong>Answer.</strong> No merge or replication protocol was demonstrated.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How is data scoped to a user?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The schema contains ownership policies, and the function validates the user and filters tasks. I’d verify the database calls receive the intended caller context.</p>
+<div class="follow"><p><strong>Understand why.</strong> A user object in JavaScript is separate from the database role.</p><p><strong>Harder follow-up.</strong> How would you prove the boundary? <strong>Answer.</strong> Use two real accounts and attempt cross-user reads and updates.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What if the ranking response succeeds but a write fails?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The function can calculate scores and return a list while updates are attempted separately. I’d check the stored state after a forced failure.</p>
+<div class="follow"><p><strong>Understand why.</strong> A returned score and a saved score are different.</p><p><strong>Harder follow-up.</strong> What is the symptom you would test? <strong>Answer.</strong> A visible recommendation that disagrees with reloaded scores.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What did you test?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The supplied review inspected code, migration and the function. It did not run the build, browser or live function.</p>
+<div class="follow"><p><strong>Understand why.</strong> Build success would only cover part of the claim.</p><p><strong>Harder follow-up.</strong> What is the first test for the rule? <strong>Answer.</strong> Fix the clock and check values on each due-date boundary.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What is a useful planning edge case?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> An undated task can be excluded by the query before the planner classifies it as unscheduled. I’d trace the filter before blaming drag and drop.</p>
+<div class="follow"><p><strong>Understand why.</strong> A later branch cannot recover rows filtered out earlier.</p><p><strong>Harder follow-up.</strong> What would you check? <strong>Answer.</strong> Whether a task with a null due date reaches the planner.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What would you improve first?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> I’d make demo and cloud differences visible and test their shared behavior. Then I’d verify stored score updates and handle failed writes.</p>
+<div class="follow"><p><strong>Understand why.</strong> Make the core workflow predictable before extending scheduling.</p><p><strong>Harder follow-up.</strong> How would you evaluate ranking? <strong>Answer.</strong> Compare a fixed rule baseline on agreed tasks and measure useful ordering, not just clicks.</p></div>
+</div>
+</div>
+</section>
+<section class="topic">
+<h4>When something goes wrong</h4>
+<div class="failure-list"><div class="tile"><h5>Cloud sign-in fails</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>The user may believe cloud data was opened.</dd></div><div><dt>What the system does</dt><dd>The app can fall back to demo mode.</dd></div><div><dt>Remaining limit</dt><dd>The fallback can blur whether data is local or cloud.</dd></div></dl></div>
+<div class="tile"><h5>A due date approaches</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>A task becomes more urgent over time.</dd></div><div><dt>What the system does</dt><dd>The function can recompute scores when invoked.</dd></div><div><dt>Remaining limit</dt><dd>Stored scores can become stale between runs.</dd></div></dl></div>
+<div class="tile"><h5>Ranking writes only partly succeed</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>Some persisted scores can lag behind the returned list.</dd></div><div><dt>What the system does</dt><dd>The function attempts updates after computing the ranks.</dd></div><div><dt>Remaining limit</dt><dd>Separate update results need checking. Recurring task creation also has limits around intervals and date ranges.</dd></div></dl></div></div>
+</section>
+<section class="topic">
+<h4>What to qualify</h4>
+<div class="caution"><p>Source supports heuristics and fixed confidence, with no verified trained model, productivity gain or automatic schedule generation. Cloud authorization and provider parity were not exercised.</p></div>
+</section>
+<p class="source">Source pointer · <a href="https://github.com/vedpatel-real-ai/smart-flow-ai-planner/blob/fda439e2e94c502890c2600e14e7c927670fdc57/src/components/DailyPlanner.tsx">Planner and schedule control</a></p>
+<section class="topic" id="smart-revise">
+<h4>Five-minute revision card</h4>
+<div class="remember"><dl class="facts"><div><dt>In one sentence</dt><dd>Task planner with a local demo, manual time blocks and rule-based ranking.</dd></div><div><dt>Architecture</dt><dd>React → local or Supabase adapter · Edge Function → score → sorted results</dd></div><div><dt>Remember</dt><dd>Rule weights · provider adapter · stale score</dd></div><div><dt>Main challenge</dt><dd>Keep ranking, scheduling and storage semantics clear.</dd></div><div><dt>Biggest limit</dt><dd>Fixed confidence is not a measured probability.</dd></div></dl><dl class="fast-qa">
+<div class="small-qa"><dt>Where does priority come from?</dt><dd>Fixed rules using task fields.</dd></div>
+<div class="small-qa"><dt>What makes a task urgent?</dt><dd>Its time until the deadline.</dd></div>
+<div class="small-qa"><dt>Does rank create a schedule?</dt><dd>Ranking orders tasks. Scheduling places them.</dd></div>
+<div class="small-qa"><dt>Does local demo sync?</dt><dd>Sync is not demonstrated.</dd></div>
+<div class="small-qa"><dt>Was productivity measured?</dt><dd>No supported measured gain.</dd></div>
+</dl></div>
+</section>
+<p class="jump-up"><a href="#quick-start">↑ Project index</a></p>
+</article>
+<article class="project" id="eda" aria-labelledby="eda-title">
+<header class="project-head">
+<div class="project-identity">
+<div class="project-mark" aria-hidden="true">📈</div>
+<div class="project-heading">
+<p class="project-category">Simulation &amp; data analysis</p>
+<h3 id="eda-title">Financial EDA</h3>
+<p>Notebook that simulates prices and explores time-series statistics.</p>
+<p class="stack">Python · Jupyter · NumPy · pandas · Matplotlib · Seaborn</p>
+</div>
+</div>
+<nav class="sheet-links" aria-label="Financial EDA topics"><a href="#eda-flow">Workflow</a> <a href="#eda-concepts">Concepts</a> <a href="#eda-say">What to say</a> <a href="#eda-questions">Questions</a> <a href="#eda-revise">Revision card</a></nav>
+</header>
+<p class="sheet-intro">This is an exploratory data analysis notebook for learning how prices and returns behave. It generates three synthetic series using real ticker labels. It saves and reloads the data, checks it, computes features and makes charts.</p>
+<section class="topic" id="eda-flow">
+<h4>How it works</h4>
+<figure class="flow flow--eda"><figcaption>From assumed relationships to measured outputs</figcaption><ol>
+<li>Choose assumptions and seed</li>
+<li>Mix shocks into price paths</li>
+<li>Save and reload CSV</li>
+<li>Calculate returns and risk features</li>
+<li>Plot and interpret</li>
+</ol></figure><ol class="steps">
+<li>Start with chosen drift, volatility and a correlation matrix. Mix independent shocks with a Cholesky factor, then accumulate log price changes.</li>
+<li>Save the simulated prices and reload dates and columns. Inspect missing values, duplicates, positivity and gaps.</li>
+<li>Calculate daily and compounded returns, moving averages and rolling volatility. Plot return correlations and other outputs.</li>
+</ol><div class="grid compare"><div class="tile"><h5>Generator inputs</h5><p>Seed, drift, volatility and assumed shock correlations.</p></div><div class="tile"><h5>Analysis outputs</h5><p>Returns, rolling volatility and measured correlations for this path.</p></div></div>
+</section>
+<section class="topic" id="eda-concepts">
+<h4>Concepts to understand</h4>
+<div class="grid concepts">
+<div class="tile"><h5>Seeded simulation</h5><dl class="facts"><div><dt>Meaning</dt><dd>A seed makes the random draws repeatable under the same setup.</dd></div><div><dt>Why it matters</dt><dd>Make it easier to debug and repeat a scenario.</dd></div><div><dt>Project example</dt><dd>The notebook uses seed 42.</dd></div><div><dt>What could go wrong</dt><dd>A repeatable draw says nothing about real-market accuracy.</dd></div></dl></div>
+<div class="tile"><h5>Cholesky factor</h5><dl class="facts"><div><dt>Meaning</dt><dd>Break a correlation matrix into a matrix that can mix independent shocks.</dd></div><div><dt>Why it matters</dt><dd>Give a simulated dataset controlled co-movement.</dd></div><div><dt>Project example</dt><dd>The generated shocks roughly follow the assumed relationships across enough draws.</dd></div><div><dt>What could go wrong</dt><dd>An invalid correlation matrix can prevent factorization.</dd></div></dl></div>
+<div class="tile"><h5>Daily return</h5><dl class="facts"><div><dt>Meaning</dt><dd>Measure the change relative to yesterday’s price.</dd></div><div><dt>Why it matters</dt><dd>Compare proportional changes across different prices.</dd></div><div><dt>Project example</dt><dd>The notebook divides by the previous price and subtracts one.</dd></div><div><dt>What could go wrong</dt><dd>Comparing raw price levels can mistake shared trends for related returns.</dd></div></dl></div>
+<div class="tile"><h5>Rolling volatility</h5><dl class="facts"><div><dt>Meaning</dt><dd>Measure recent variation in returns over a moving window.</dd></div><div><dt>Why it matters</dt><dd>See when recent variation rises or falls.</dd></div><div><dt>Project example</dt><dd>The notebook uses 30 observations and annualizes with the square root of 252.</dd></div><div><dt>What could go wrong</dt><dd>The first windows have missing values and a different calendar changes interpretation.</dd></div></dl></div>
+<div class="tile"><h5>Price z-score</h5><dl class="facts"><div><dt>Meaning</dt><dd>Show how far a price sits from its series mean in standard deviations.</dd></div><div><dt>Why it matters</dt><dd>Flag values worth examining more closely.</dd></div><div><dt>Project example</dt><dd>Large absolute values are flagged at a threshold of three.</dd></div><div><dt>What could go wrong</dt><dd>A price-level check can miss a sharp daily return or flag a trend.</dd></div></dl></div>
+</div>
+</section>
+<section class="topic" id="eda-say">
+<h4>What I can say</h4>
+<div class="spoken"><div class="prompt"><p class="eyebrow">20–30 seconds · simple</p><p>Financial EDA is a notebook for exploring a simulated stock dataset. It creates three price paths with chosen relationships, then calculates returns, volatility and correlations. I’d use it to explain the analysis steps and the limits of conclusions from synthetic data.</p></div><div class="prompt"><p class="eyebrow">60–90 seconds · technical</p><p>The notebook starts with a seed, starting prices, volatility, drift and assumed correlations. It draws independent random shocks and mixes them with a Cholesky factor so the shocks are related in the intended way. It accumulates the log changes to create prices, saves them to CSV and loads them again.</p><p>After basic checks, it calculates daily returns, compounded returns, moving averages and rolling volatility. It uses returns to estimate how the series move together. The correlation chart describes this generated path, which came from assumptions already supplied to the generator. The review inspected the notebook and stored outputs, so a clean restart and complete run would be a separate verification step.</p></div></div>
+</section>
+<section class="topic">
+<h4>Engineering decisions</h4>
+<p class="source">These are engineering rationales. Use your confirmed role when explaining a choice you made.</p><div class="grid decisions">
+<div class="tile"><h5>Use synthetic prices</h5><dl class="facts"><div><dt>Problem</dt><dd>A controlled teaching example needs known inputs.</dd></div><div><dt>Approach</dt><dd>Choose parameters and generate a seeded path.</dd></div><div><dt>Benefit</dt><dd>You can explain what created the relationships.</dd></div><div><dt>Limitation</dt><dd>A single path cannot establish behavior across markets or seeds.</dd></div></dl></div>
+<div class="tile"><h5>Save and reload CSV</h5><dl class="facts"><div><dt>Problem</dt><dd>Generated and analyzed data should have a visible boundary.</dd></div><div><dt>Approach</dt><dd>Write prices to a file and reload them with parsed dates.</dd></div><div><dt>Benefit</dt><dd>The pipeline checks a real serialization step.</dd></div><div><dt>Limitation</dt><dd>CSV alone does not preserve assumptions, environment or full metadata.</dd></div></dl></div>
+<div class="tile"><h5>Compute correlations from returns</h5><dl class="facts"><div><dt>Problem</dt><dd>Different price scales and trends can distort comparisons.</dd></div><div><dt>Approach</dt><dd>Calculate daily percentage changes before correlation.</dd></div><div><dt>Benefit</dt><dd>The comparison measures co-movement in changes.</dd></div><div><dt>Limitation</dt><dd>The estimate is from one synthetic sample and is not causal.</dd></div></dl></div>
+</div>
+</section>
+<section class="topic" id="eda-questions">
+<h4>Questions a professor might ask</h4>
+<div class="qa-list">
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> Is this real market data?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The prices are generated with real ticker names used as labels. I’d present the result as a data workflow on synthetic series.</p>
+<div class="follow"><p><strong>Understand why.</strong> Labels do not establish provenance.</p><p><strong>Harder follow-up.</strong> Did it forecast any price? <strong>Answer.</strong> The inspected notebook does exploratory analysis without a fitted prediction model.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What did you personally contribute?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> I worked on [confirmed notebook or analysis step]. I can show the cell and explain [actual check].</p>
+<div class="follow"><p><strong>Understand why.</strong> Choose one transformation you can calculate manually.</p><p><strong>Harder follow-up.</strong> What would a stronger contribution example include? <strong>Answer.</strong> The input, your exact change and an output you verified.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How do you generate correlated moves?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> I start with independent random shocks and mix them using a Cholesky factor. That makes their covariance follow the input matrix in expectation.</p>
+<div class="follow"><p><strong>Understand why.</strong> With row-vector shocks, the notebook multiplies by the transpose of the factor.</p><p><strong>Harder follow-up.</strong> Why don’t realized return correlations match exactly? <strong>Answer.</strong> One finite simulated path varies, and return calculations add transformations.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What kind of drift does the code use?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> It adds the drift directly to log price changes. I’d describe it as log drift under this equation.</p>
+<div class="follow"><p><strong>Understand why.</strong> The usual price-drift parameterization has a half-variance adjustment.</p><p><strong>Harder follow-up.</strong> Is the date list an exchange calendar? <strong>Answer.</strong> It uses weekdays, so exchange holidays are not modeled.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How do you calculate cumulative return?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> Multiply each period’s one-plus-return and subtract one at the end. The result should agree with final price divided by first price, minus one.</p>
+<div class="follow"><p><strong>Understand why.</strong> Adding returns ignores compounding.</p><p><strong>Harder follow-up.</strong> What happens to the first daily return? <strong>Answer.</strong> There is no earlier price to compare against.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What does rolling volatility tell you?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> It shows how spread out recent returns are within a moving window. That can change over time even within one path.</p>
+<div class="follow"><p><strong>Understand why.</strong> It differs from volatility estimated across the entire dataset.</p><p><strong>Harder follow-up.</strong> Why might early values be missing? <strong>Answer.</strong> The window is not full yet.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What does a clean z-score scan prove?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> It says the selected price-level rule found no flags in that stored result. It cannot tell you that every daily move is ordinary.</p>
+<div class="follow"><p><strong>Understand why.</strong> Price levels and daily changes ask different questions.</p><p><strong>Harder follow-up.</strong> What would you inspect for a sudden move? <strong>Answer.</strong> The return series and the surrounding data.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> Did you reproduce the charts?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The review inspected the notebook and committed outputs. It did not execute the entire notebook or compare regenerated files.</p>
+<div class="follow"><p><strong>Understand why.</strong> A stored output can survive changes to earlier cells.</p><p><strong>Harder follow-up.</strong> How would you verify it? <strong>Answer.</strong> Restart the kernel, run all cells with recorded dependencies and compare data invariants.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What is the main lesson?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> A chart can be correct for the data and still support only a narrow conclusion. Here the strongest result is the analysis workflow itself.</p>
+<div class="follow"><p><strong>Understand why.</strong> The correlation starts as an assumption.</p><p><strong>Harder follow-up.</strong> Can this establish an investment strategy? <strong>Answer.</strong> Synthetic charts alone do not establish real returns, causality or strategy performance.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What would you improve first?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> I’d enforce data checks and record the simulation settings with the output. Then I’d verify the pipeline from a fresh environment and try multiple seeds.</p>
+<div class="follow"><p><strong>Understand why.</strong> Use a fixed seed to debug and many draws to check behavior.</p><p><strong>Harder follow-up.</strong> Which invariant would you assert? <strong>Answer.</strong> Compounded returns should match final price over first price minus one.</p></div>
+</div>
+</div>
+</section>
+<section class="topic">
+<h4>When something goes wrong</h4>
+<div class="failure-list"><div class="tile"><h5>Correlation input is invalid</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>The generator cannot build the expected factor.</dd></div><div><dt>What the system does</dt><dd>Cholesky requires a suitable positive-definite matrix.</dd></div><div><dt>Remaining limit</dt><dd>Explicit matrix validation is a proposed check.</dd></div></dl></div>
+<div class="tile"><h5>Notebook state is stale</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>A plot can reflect variables from an earlier run.</dd></div><div><dt>What the system does</dt><dd>The notebook records stored outputs and a seeded workflow.</dd></div><div><dt>Remaining limit</dt><dd>Fresh run-all was not verified.</dd></div></dl></div>
+<div class="tile"><h5>Data looks clean after a bad value</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>Printed checks can allow the pipeline to continue.</dd></div><div><dt>What the system does</dt><dd>The notebook inspects dates, values and anomalies.</dd></div><div><dt>Remaining limit</dt><dd>Some checks report rather than enforce a failure.</dd></div></dl></div></div>
+</section>
+<section class="topic">
+<h4>What to qualify</h4>
+<div class="caution"><p>The paths are synthetic and use assumed correlation and weekday dates. A seed and stored plots are insufficient to prove clean reruns or any real-market claim.</p></div>
+</section>
+<p class="source">Source pointer · <a href="https://github.com/vedpatel-real-ai/financial-eda-project/blob/7be3f17f73532065a3197afc2c15dff626987357/notebook/financial_stock_market_analysis.ipynb">Analysis notebook</a></p>
+<section class="topic" id="eda-revise">
+<h4>Five-minute revision card</h4>
+<div class="remember"><dl class="facts"><div><dt>In one sentence</dt><dd>Notebook for generating, checking and analyzing synthetic correlated prices.</dd></div><div><dt>Architecture</dt><dd>Seeded simulation → CSV → validation → return features → plots</dd></div><div><dt>Remember</dt><dd>Cholesky · compounded returns · rolling volatility</dd></div><div><dt>Main challenge</dt><dd>Keep input assumptions separate from observed output.</dd></div><div><dt>Biggest limit</dt><dd>One generated path and no verified clean run-all.</dd></div></dl><dl class="fast-qa">
+<div class="small-qa"><dt>Real prices?</dt><dd>Synthetic prices with ticker labels.</dd></div>
+<div class="small-qa"><dt>Where do relationships start?</dt><dd>In the assumed shock correlation matrix.</dd></div>
+<div class="small-qa"><dt>Why use returns?</dt><dd>Compare proportional price changes.</dd></div>
+<div class="small-qa"><dt>How do returns compound?</dt><dd>Multiply period growth factors.</dd></div>
+<div class="small-qa"><dt>What verifies reproducibility?</dt><dd>A clean run with recorded setup and checks.</dd></div>
+</dl></div>
+</section>
+<p class="jump-up"><a href="#quick-start">↑ Project index</a></p>
+</article>
+<article class="project" id="older" aria-labelledby="older-title">
+<header class="project-head">
+<div class="project-identity">
+<div class="project-mark" aria-hidden="true">🏡</div>
+<div class="project-heading">
+<p class="project-category">Earlier React site &amp; maintenance</p>
+<h3 id="older-title">Older Urban Edge Living Space</h3>
+<p>Earlier React property website and client maintenance experience.</p>
+<p class="stack">React · Supabase · hosting/domain work reported in résumé</p>
+</div>
+</div>
+<nav class="sheet-links" aria-label="Older Urban Edge Living Space topics"><a href="#older-flow">Workflow</a> <a href="#older-concepts">Concepts</a> <a href="#older-say">What to say</a> <a href="#older-questions">Questions</a> <a href="#older-revise">Revision card</a></nav>
+</header>
+<p class="sheet-intro">This earlier site is described in the résumé as a way for visitors to browse and filter properties. It also describes authentication, administrative features, deployment and later maintenance. The source was inaccessible in the supplied review, so the exact implementation is open.</p>
+<section class="topic" id="older-flow">
+<h4>How it works</h4>
+<figure class="flow flow--older"><figcaption>Documented outline · implementation details need evidence</figcaption><ol>
+<li>Visitor selects search criteria</li>
+<li>React sends filters</li>
+<li>Supabase-backed data path</li>
+<li>Visitor sees matching listings</li>
+</ol></figure><ol class="steps">
+<li>Documented outline only. The résumé describes React search and server-side filtering. The exact endpoint, table and sorting are unknown.</li>
+<li>The résumé describes authentication and administrative features. The actual server or database permission checks need recovered source or runtime evidence.</li>
+<li>Hosting, domain and later maintenance are documented. Use a confirmed change to explain how you checked a release.</li>
+</ol><div class="grid compare"><div class="tile"><h5>Documented</h5><p>React UI, Supabase-backed data and sign-in, search and admin work.</p></div><div class="tile"><h5>Open</h5><p>Exact query, roles, deployment behavior and test results.</p></div></div>
+</section>
+<section class="topic" id="older-concepts">
+<h4>Concepts to understand</h4>
+<div class="grid concepts">
+<div class="tile"><h5>Server-side filtering</h5><dl class="facts"><div><dt>Meaning</dt><dd>The backend selects which records match.</dd></div><div><dt>Why it matters</dt><dd>Consider the full listing set before returning one page.</dd></div><div><dt>Project example</dt><dd>The résumé describes filtering on the server.</dd></div><div><dt>What could go wrong</dt><dd>Filtering only an already paged result could omit valid matches.</dd></div></dl></div>
+<div class="tile"><h5>Authentication and authorization</h5><dl class="facts"><div><dt>Meaning</dt><dd>Sign-in says who you are. Permission says what you can do.</dd></div><div><dt>Why it matters</dt><dd>Keep signed-in visitors from making staff changes.</dd></div><div><dt>Project example</dt><dd>Both matter for the documented admin features.</dd></div><div><dt>What could go wrong</dt><dd>A signed-in visitor could attempt a direct listing edit.</dd></div></dl></div>
+<div class="tile"><h5>Public data boundary</h5><dl class="facts"><div><dt>Meaning</dt><dd>Send only fields that visitors should see.</dd></div><div><dt>Why it matters</dt><dd>Avoid sending internal listing fields to visitors.</dd></div><div><dt>Project example</dt><dd>Use this to explain what you would inspect in the old property response.</dd></div><div><dt>What could go wrong</dt><dd>Hiding fields in React would leave the browser payload exposed.</dd></div></dl></div>
+<div class="tile"><h5>Release smoke check</h5><dl class="facts"><div><dt>Meaning</dt><dd>Quickly exercise a few important actions after a change.</dd></div><div><dt>Why it matters</dt><dd>Catch broken core actions after a change.</dd></div><div><dt>Project example</dt><dd>Search, login and a representative route are sensible checks for the documented maintenance work.</dd></div><div><dt>What could go wrong</dt><dd>A homepage can load while search or sign-in fails.</dd></div></dl></div>
+<div class="tile"><h5>SEO evidence</h5><dl class="facts"><div><dt>Meaning</dt><dd>Configuration and search performance are different facts.</dd></div><div><dt>Why it matters</dt><dd>Connect search claims to observable evidence.</dd></div><div><dt>Project example</dt><dd>Titles and indexing settings can be inspected, while ranking needs historical evidence.</dd></div><div><dt>What could go wrong</dt><dd>A metadata edit alone cannot support a traffic claim.</dd></div></dl></div>
+</div>
+</section>
+<section class="topic" id="older-say">
+<h4>What I can say</h4>
+<div class="spoken"><div class="prompt"><p class="eyebrow">20–30 seconds · simple</p><p>Older Urban Edge is an earlier real-estate site in my résumé, using React and Supabase. Visitors could browse and search properties, and the work included administration and later maintenance. For technical details I’d use a change I can actually show and keep it separate from the newer Land Space project.</p></div><div class="prompt"><p class="eyebrow">60–90 seconds · technical</p><p>The résumé describes a React website connected to Supabase for backend data and sign-in. It describes server-side filtering, so the outline is that the visitor picks criteria, the backend selects matches and the page shows them. The earlier source was unavailable to the preparation review, so I’d check the real query, pagination and permissions before giving details.</p><p>For admin features, I can explain why sign-in identifies the user and why changing a listing needs a separate permission check. For maintenance I’d give [actual request], [change I made] and [how I checked it]. That gives a concrete example without relying on the newer Next.js repository or assuming a measured SEO result.</p></div></div>
+</section>
+<section class="topic">
+<h4>Engineering decisions</h4>
+<p class="source">These are engineering rationales. Use your confirmed role when explaining a choice you made.</p><div class="grid decisions">
+<div class="tile"><h5>Filter before returning results</h5><dl class="facts"><div><dt>Problem</dt><dd>Visitors need to narrow listings.</dd></div><div><dt>Approach</dt><dd>Server-side filtering is reported in the résumé.</dd></div><div><dt>Benefit</dt><dd>It can filter the full dataset before returning a page.</dd></div><div><dt>Limitation</dt><dd>The actual query, ordering and page behavior need evidence.</dd></div></dl></div>
+<div class="tile"><h5>Separate identity and write permission</h5><dl class="facts"><div><dt>Problem</dt><dd>Visitors and staff need different abilities.</dd></div><div><dt>Approach</dt><dd>The résumé reports auth and administration. Verify the enforcement before describing it.</dd></div><div><dt>Benefit</dt><dd>A backend check can protect direct requests.</dd></div><div><dt>Limitation</dt><dd>The earlier role source and policies are unknown.</dd></div></dl></div>
+<div class="tile"><h5>Check releases with real user actions</h5><dl class="facts"><div><dt>Problem</dt><dd>A deployment can load but have a broken feature.</dd></div><div><dt>Approach</dt><dd>As a proposed approach, check search, sign-in and relevant URLs after changes.</dd></div><div><dt>Benefit</dt><dd>The checks map to the site’s documented use.</dd></div><div><dt>Limitation</dt><dd>No specific earlier rollout or rollback process was independently verified.</dd></div></dl></div>
+</div>
+</section>
+<section class="topic" id="older-questions">
+<h4>Questions a professor might ask</h4>
+<div class="qa-list">
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What was this older project?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> It was the earlier React and Supabase property website in my résumé. It covered browsing, search and administrative work, with later maintenance.</p>
+<div class="follow"><p><strong>Understand why.</strong> Keep it separate from the newer Next.js build.</p><p><strong>Harder follow-up.</strong> Can you use the newer source to show how the old one worked? <strong>Answer.</strong> Only as a separate project. The older implementation needs its own evidence.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What did you personally contribute?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> I handled [actual initial or maintenance responsibility]. I changed [specific item] and verified it by [real check].</p>
+<div class="follow"><p><strong>Understand why.</strong> Separate initial delivery and later updates.</p><p><strong>Harder follow-up.</strong> What if you cannot recover that example? <strong>Answer.</strong> Explain what is documented and say which artifact would confirm the detail.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How does the search architecture work?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The résumé says the React UI sent filters to a Supabase-backed data path. I would show the original query before specifying the endpoint, indexes or pagination.</p>
+<div class="follow"><p><strong>Understand why.</strong> The architecture outline is documented, exact mechanics are open.</p><p><strong>Harder follow-up.</strong> Why filter before pagination? <strong>Answer.</strong> So a matching record outside the first unfiltered page is still considered.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> Why use React and Supabase?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> React provides reusable UI pieces, and Supabase can provide backend data and sign-in. I’d describe those as reasonable benefits unless I can confirm the original selection reason.</p>
+<div class="follow"><p><strong>Understand why.</strong> Separate engineering rationale from your own historical choice.</p><p><strong>Harder follow-up.</strong> Did the old site use the newer publication workflow? <strong>Answer.</strong> There is no evidence for that in the older source review.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How did you protect admin writes?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The résumé reports role-based features. I’d show the original permission check before saying exactly how it enforced those roles.</p>
+<div class="follow"><p><strong>Understand why.</strong> A hidden control is only a UI choice.</p><p><strong>Harder follow-up.</strong> How would you verify enforcement? <strong>Answer.</strong> Try the write directly with a non-admin account and check the stored record.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What maintenance work did you do?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> A real example is [request], [change] and [how I checked it]. I’d explain the observable result rather than infer improved reliability.</p>
+<div class="follow"><p><strong>Understand why.</strong> A route, deployment record or diff is stronger than a broad claim.</p><p><strong>Harder follow-up.</strong> What if the client changed requirements? <strong>Answer.</strong> Give the actual request, how you clarified it and what you verified.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How did you deploy or handle domains?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The résumé records hosting and domain work. I’d name the platform, records and verification only after confirming them.</p>
+<div class="follow"><p><strong>Understand why.</strong> Site content and DNS changes can fail in different ways.</p><p><strong>Harder follow-up.</strong> What would you check after a domain change? <strong>Answer.</strong> Resolution, HTTPS, intended redirects and a representative user route.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> How did you test the site?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> The old test suite and runtime results were unavailable in the review. I’d talk about checks I actually performed and label proposed ones clearly.</p>
+<div class="follow"><p><strong>Understand why.</strong> Appearance alone cannot prove security.</p><p><strong>Harder follow-up.</strong> What would be a good first pair of checks? <strong>Answer.</strong> A known filter case and a denied write from a non-admin.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What did the SEO work achieve?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> I can describe [confirmed metadata or content change] and how I checked it. I’d need analytics or search-console evidence to claim an outcome.</p>
+<div class="follow"><p><strong>Understand why.</strong> Inspecting a title establishes a change to the site, not the traffic effect.</p><p><strong>Harder follow-up.</strong> Could a ranking change have another cause? <strong>Answer.</strong> Yes. Compare dates and account for other changes before making an attribution.</p></div>
+</div>
+<div class="qa">
+<h5 class="question"><span class="q-label">🎓 Professor asks</span> What would you improve first?</h5>
+<p class="answer"><strong class="a-label">🗣️ Your answer</strong> I’d recover the earlier revision and document how to check a release. Then I’d add focused checks around filters and permissions.</p>
+<div class="follow"><p><strong>Understand why.</strong> Start where the evidence gap affects an important feature.</p><p><strong>Harder follow-up.</strong> Which record would you recover first? <strong>Answer.</strong> The actual code revision or release artifact for the feature I am discussing.</p></div>
+</div>
+</div>
+</section>
+<section class="topic">
+<h4>When something goes wrong</h4>
+<div class="failure-list"><div class="tile"><h5>Filter misses a matching property</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>A user can receive an incomplete list.</dd></div><div><dt>What the system does</dt><dd>Actual older query behavior is unknown.</dd></div><div><dt>Remaining limit</dt><dd>Use a known matching fixture beyond the first page to check it.</dd></div></dl></div>
+<div class="tile"><h5>Non-admin tries an edit</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>A direct request bypasses the navigation.</dd></div><div><dt>What the system does</dt><dd>The résumé documents roles. Enforcement was not available to inspect.</dd></div><div><dt>Remaining limit</dt><dd>Use separate accounts and verify the record after the attempted write.</dd></div></dl></div>
+<div class="tile"><h5>Site changes after a release or domain update</h5><dl class="facts"><div><dt>What goes wrong</dt><dd>A route, redirect or metadata can be wrong.</dd></div><div><dt>What the system does</dt><dd>No specific incident or recovery mechanism was confirmed.</dd></div><div><dt>Remaining limit</dt><dd>Use a real release record and repeatable smoke checks.</dd></div></dl></div></div>
+</section>
+<section class="topic">
+<h4>What to qualify</h4>
+<div class="caution"><p>The old repository was unavailable. Feature and maintenance claims come from the résumé. Exact access controls, testing, production outcomes and SEO effects need separate evidence.</p></div>
+</section>
+
+<section class="topic" id="older-revise">
+<h4>Five-minute revision card</h4>
+<div class="remember"><dl class="facts"><div><dt>In one sentence</dt><dd>Earlier React property website with documented search, admin features and maintenance.</dd></div><div><dt>Architecture</dt><dd>Documented React → Supabase-backed data and sign-in → site</dd></div><div><dt>Remember</dt><dd>Backend filtering · permissions · release checks</dd></div><div><dt>Main challenge</dt><dd>Explain a genuine earlier change without borrowing newer source.</dd></div><div><dt>Biggest limit</dt><dd>The source and runtime evidence are incomplete.</dd></div></dl><dl class="fast-qa">
+<div class="small-qa"><dt>Which property project is this?</dt><dd>The earlier React site.</dd></div>
+<div class="small-qa"><dt>Where was filtering described?</dt><dd>On the server, exact path unverified.</dd></div>
+<div class="small-qa"><dt>Does login grant admin rights?</dt><dd>A separate permission check is required.</dd></div>
+<div class="small-qa"><dt>Can newer source prove old features?</dt><dd>Use the old revision or a release artifact.</dd></div>
+<div class="small-qa"><dt>What supports an SEO result?</dt><dd>Measured evidence tied to a confirmed change.</dd></div>
+</dl></div>
+</section>
+<p class="jump-up"><a href="#quick-start">↑ Project index</a></p>
+</article>
+</section>
+<section id="difficult" aria-labelledby="difficult-title">
+<h2 id="difficult-title">How to handle a difficult question</h2>
+<ol>
+<li>Understand the question. If the version, goal or failure is unclear, ask one specific question.</li>
+<li>Give the direct answer or explain the part you know.</li>
+<li>Connect it to one example from your project.</li>
+<li>Think through the trade-off or what happens when a step fails.</li>
+<li>State exactly what you would check if you’re uncertain.</li>
+</ol>
+<div class="hard-list"><div class="hard-card"><h4>I know the answer</h4><p>State it in one sentence, give a concrete example and stop at the scope of the question.</p><p class="example">“The GCMT server sets the price from stored product data. A browser total can be edited.”</p></div>
+<div class="hard-card"><h4>I know part of it</h4><p>Name the part you can explain and the exact piece you’d check.</p><p class="example">“The VoiceToText guard compares app IDs. I’d need to inspect the focused-field API before saying how to check the exact field.”</p></div>
+<div class="hard-card"><h4>I forgot the term</h4><p>Describe the behavior first. The technical name can come later.</p><p class="example">“I’d keep the same payment ID on a retry so the database can recognize a receipt it already saved.”</p></div>
+<div class="hard-card"><h4>I’ve never used the technology</h4><p>Ask what problem it solves, then connect to a mechanism you understand. Label the connection as an analogy.</p><p class="example">“I haven’t used that tool. Is it coordinating concurrent writes? I can explain how the LF enrollment lock does that in Postgres.”</p></div>
+<div class="hard-card"><h4>It’s outside my résumé</h4><p>Set the scope and explain how you would begin.</p><p class="example">“My EDA project uses synthetic prices. For real exchange data I’d first check where it came from, which dates are expected and how missing values are handled.”</p></div>
+<div class="hard-card"><h4>Why did you choose this design?</h4><p>Give the problem, the approach and one trade-off. Say when you are explaining a likely rationale.</p><p class="example">“A single transfer row gives both accounts the same movement to read. I’d confirm the original design discussion before calling that my reason.”</p></div>
+<div class="hard-card"><h4>They ask about a bug</h4><p>Separate the symptom, the suspected cause and the check that would distinguish them.</p><p class="example">“If PawnTrack shows a payment with the old balance, I’d compare the saved receipt and loan record, then check whether the second write failed.”</p></div>
+<div class="hard-card"><h4>They challenge the implementation</h4><p>State the assumption and accept a real counterexample. Use it to update the answer.</p><p class="example">“You’re right that the Maps embed is a separate output. My claim only covered the private coordinate fields in the projected response.”</p></div>
+<div class="hard-card"><h4>There are several valid answers</h4><p>Clarify the goal or constraint, then give a conditional choice.</p><p class="example">“If we need easy-to-explain ranking with no labeled data, I’d start with Smart Flow’s rules. With labels and an evaluation plan, I’d compare a learned ranker against them.”</p></div>
+<div class="hard-card"><h4>I made a mistake</h4><p>Correct the specific claim, then continue from the corrected fact.</p><p class="example">“Let me correct that. The ATLAS report showed fewer characters. Both runs reported 2,050 input tokens.”</p></div>
+<div class="hard-card"><h4>I need a few seconds</h4><p>Pause, identify the key boundary and say how you’ll trace it.</p><p class="example">“Give me a moment. I’ll separate what the gateway did from what the database committed.”</p></div>
+<div class="hard-card"><h4>They ask if AI wrote the code</h4><p>Say what was scaffolded or generated, what you changed, and what you checked yourself.</p><p class="example">“I used [actual assistance] for [scope]. I reviewed [specific behavior], changed [your work], and checked it with [real test].”</p></div>
+<div class="hard-card"><h4>I cannot verify the claim</h4><p>Name the evidence you have and the missing observation.</p><p class="example">“CI reports GCMT test passes for that revision. To establish settlement I’d need approved provider evidence for the exact deployed flow.”</p></div></div>
+<p class="remember final-topic"><strong>When to clarify.</strong> Ask before reasoning from a guess. For example, ask whether the professor means a retry of the same payment or two separate payments. Then answer for that case and say what changes in the other one.</p>
+<p class="jump-up"><a href="#quick-start">↑ Project index</a></p>
+</section>
+<section id="personal" aria-labelledby="personal-title">
+<h2 id="personal-title">Common personal and interview questions</h2>
+<p class="section-note">Fill in the brackets with facts you can explain. Pick one real example per answer.</p>
+<dl class="">
+<div class="small-qa"><dt>Tell me about yourself.</dt><dd>Use the opening introduction. Finish with the sentence about what you want to learn.</dd></div>
+<div class="small-qa"><dt>Why software engineering?</dt><dd>I like figuring out why a workflow stops being correct when something changes. A repeated payment or a private field in a response is a small example with a real consequence.</dd></div>
+<div class="small-qa"><dt>Why this research project?</dt><dd>I’m interested in [specific problem from the invitation]. My closest example is [real project and mechanism]. I’d like to learn how the lab measures whether [specific approach] helps.</dd></div>
+<div class="small-qa"><dt>Which project are you proudest of?</dt><dd>I’m proud of [confirmed change or result] in [project]. It mattered because [reason], and I checked it by [actual evidence].</dd></div>
+<div class="small-qa"><dt>Which project was hardest?</dt><dd>[Project] was hardest for me because [real difficulty]. I’d explain the failure case I had to understand, then what I actually tried.</dd></div>
+<div class="small-qa"><dt>What are your strongest skills?</dt><dd>My strongest area is connecting a user interface to backend workflows. I can explain how a request moves through React and PostgreSQL, where permission is checked and what changes in the database.</dd></div>
+<div class="small-qa"><dt>What is a weakness you’re working on?</dt><dd>If true for you, say “I’m strengthening my ability to explain the trade-offs behind features I’ve integrated. I practise tracing a request and then try to explain what happens when a step fails.”</dd></div>
+<div class="small-qa"><dt>How do you debug a problem?</dt><dd>I write down what I expected and find a repeatable example. Then I check each boundary until the result changes, fix the narrow cause and rerun the original case.</dd></div>
+<div class="small-qa"><dt>How do you learn something new?</dt><dd>I start with one small task, read the relevant source or documentation and try a small example. I check what happens when an input is missing or wrong so I learn the limits too.</dd></div>
+<div class="small-qa"><dt>What did you personally contribute?</dt><dd>The project started from [starting point]. My responsibility was [specific work]. I used [actual help] and verified [observable behavior].</dd></div>
+<div class="small-qa"><dt>Did you use AI while developing projects?</dt><dd>I used [actual tool or assistance] for [scope]. Here’s one change I reviewed or edited myself, and here’s how I checked it.</dd></div>
+<div class="small-qa"><dt>How do you validate AI-generated code?</dt><dd>I trace what it reads and writes, check it against the existing contract and run a normal case and a meaningful failure case. I verify the saved result for work that changes data.</dd></div>
+<div class="small-qa"><dt>What did you learn from a mistake?</dt><dd>I assumed [real assumption]. [Real observation] showed the gap, so I changed [action or habit] and checked [result].</dd></div>
+<div class="small-qa"><dt>How do you handle feedback?</dt><dd>Use a real example. “I received [feedback], clarified [point], changed [work], and checked [result].”</dd></div>
+<div class="small-qa"><dt>Why should we select you?</dt><dd>I can contribute a small software feature or test workflow and explain how I checked it. I’d ask for feedback early, especially on the research and domain assumptions.</dd></div>
+<div class="small-qa"><dt>What would you like to learn?</dt><dd>I’d like to practise turning a broad idea into a testable question, choosing a fair comparison and explaining what the evidence supports.</dd></div>
+<div class="small-qa"><dt>What could you contribute first?</dt><dd>I could help implement a narrow workflow, prepare test data or make an experiment easier to reproduce. I’d agree on a small first deliverable and how we’d judge it.</dd></div>
+<div class="small-qa"><dt>What would you ask the professor?</dt><dd>“Which part of the project is most uncertain right now?” or “What would a useful first result look like?”</dd></div>
+</dl>
+<p class="jump-up"><a href="#quick-start">↑ Project index</a></p>
+</section>
+<section id="revision" aria-labelledby="revision-title">
+<h2 id="revision-title">Final quick revision</h2>
+<div class="prompt"><p class="eyebrow">My opening · 30–45 seconds</p><p>I’m Ved Patel, a Computer Engineering student from Gujarat, graduating in June 2028. I focus on full-stack software, especially the backend rules that keep data correct when something fails or a request repeats. One example is LF Finance, where a payment can increase today’s cash while reducing an older debt. I also explored local AI tools with ATLAS, which made me more careful about what a benchmark actually measures. I’d like to bring those engineering skills to a research project and learn how to evaluate improvements rigorously.</p></div>
+<h3 class="final-topic">Nine projects at a glance</h3>
+<div class="grid final-grid"><div class="tile"><h4><a href="#gcmt">GCMT Shop</a></h4><p>Online shop with server-priced checkout and database payment reconciliation.</p><p class="map">React → Vercel → CCAvenue → Vercel callback → Postgres</p></div>
+<div class="tile"><h4><a href="#lf">LF Finance Management Software</a></h4><p>School finance app that separates debt, cash and movement between accounts.</p><p class="map">React → service → Supabase payment function → Postgres</p></div>
+<div class="tile"><h4><a href="#urban">UrbanEdge Land Space</a></h4><p>Property search and a private staff workflow for turning submissions into listings.</p><p class="map">Next.js → PostgreSQL search → public projection → listing cards</p></div>
+<div class="tile"><h4><a href="#pawn">PawnTrack</a></h4><p>Lending tracker with organization-scoped data, local demo and scheduled dues.</p><p class="map">React → demo or cloud provider → receipt → separate loan/due change</p></div>
+<div class="tile"><h4><a href="#voice">VoiceToText</a></h4><p>Mac dictation that records, recognizes and attempts to insert text locally.</p><p class="map">Shortcut → audio buffer → MLX Whisper → main-thread injector</p></div>
+<div class="tile"><h4><a href="#atlas">ATLAS</a></h4><p>Local assistant that routes requests to real tools and gates higher-risk actions.</p><p class="map">FastAPI → rules or Ollama → registry → approval when needed → tools</p></div>
+<div class="tile"><h4><a href="#smart">Smart Flow AI Planner</a></h4><p>Task planner with a local demo, manual time blocks and rule-based ranking.</p><p class="map">React → local or Supabase adapter · Edge Function → score → sorted results</p></div>
+<div class="tile"><h4><a href="#eda">Financial EDA</a></h4><p>Notebook for generating, checking and analyzing synthetic correlated prices.</p><p class="map">Seeded simulation → CSV → validation → return features → plots</p></div>
+<div class="tile"><h4><a href="#older">Older Urban Edge Living Space</a></h4><p>Earlier React property website with documented search, admin features and maintenance.</p><p class="map">Documented React → Supabase-backed data and sign-in → site</p></div></div>
+<h3 class="final-topic">Patterns that transfer between projects</h3>
+<ul>
+<li><strong>Trust the right layer.</strong> A hidden button or displayed total is easy to bypass. Check permissions and price at the trusted boundary.</li>
+<li><strong>Give retries an identity.</strong> Reuse one request ID. Check both whether it exists and whether the details match.</li>
+<li><strong>Group changes that belong together.</strong> Trace exactly which writes share a transaction. External effects and earlier requests can survive a local failure.</li>
+<li><strong>Protect shared state.</strong> A lock coordinates competing writes to one record. A unique key protects a specific identity.</li>
+<li><strong>Measure the claim you make.</strong> Separate source, an executed check and live behavior. Characters, tokens and task success are different measurements.</li>
+</ul>
+<h3 class="final-topic">Fifteen challenging questions</h3>
+<dl class="">
+<div class="small-qa"><dt>GCMT: Can a success URL prove payment?</dt><dd>It reads the saved order. Provider evidence establishes settlement.</dd></div>
+<div class="small-qa"><dt>GCMT: What happens if the gateway charges and SQL rolls back?</dt><dd>The order can stay pending. Reconcile provider state.</dd></div>
+<div class="small-qa"><dt>LF: What if two ₹80 receipts target ₹100 of debt?</dt><dd>The enrollment lock makes them check the remaining amount in turn.</dd></div>
+<div class="small-qa"><dt>LF: What can survive a failed historical payment?</dt><dd>Earlier year, enrollment or carry updates can remain.</dd></div>
+<div class="small-qa"><dt>Land Space: What stops private fields reaching the browser?</dt><dd>Return an explicit projection and inspect separate outputs such as Maps embeds.</dd></div>
+<div class="small-qa"><dt>Land Space: Does fallback publication update and audit together?</dt><dd>The fallback issues separate calls.</dd></div>
+<div class="small-qa"><dt>PawnTrack: Can a lost response duplicate a replay?</dt><dd>Yes. The queue ID never reaches the cloud write.</dd></div>
+<div class="small-qa"><dt>PawnTrack: Is one unique due row enough?</dt><dd>It does not prevent repeated notifications or partial payment updates.</dd></div>
+<div class="small-qa"><dt>VoiceToText: Does it have a FIFO worker?</dt><dd>The reviewed version has a state guard and per-recording workers.</dd></div>
+<div class="small-qa"><dt>VoiceToText: What if focus moves to a different field in the same app?</dt><dd>The same process ID can pass the destination check.</dd></div>
+<div class="small-qa"><dt>ATLAS: What does approval authorize?</dt><dd>The exact step list bound to the one-use token.</dd></div>
+<div class="small-qa"><dt>ATLAS: Did fewer characters mean fewer tokens?</dt><dd>Both reported 2,050 input tokens.</dd></div>
+<div class="small-qa"><dt>Smart Flow: What does the confidence percentage mean?</dt><dd>It is a fixed display value, not a measured probability.</dd></div>
+<div class="small-qa"><dt>Financial EDA: Where did correlation come from?</dt><dd>The generator’s input assumption, measured back on one synthetic path.</dd></div>
+<div class="small-qa"><dt>Older Urban Edge: Can the newer code prove older security?</dt><dd>Verify the original permissions with the old revision or a release artifact.</dd></div>
+</dl>
+<h3 class="final-topic">When I don’t know</h3>
+<p>Clarify the scope. State what you know, connect one relevant example and explain the test, source or observation that would settle the unknown.</p>
+<h3 class="final-topic">Five interview mistakes to avoid</h3>
+<ul>
+<li>Starting with a long stack list before stating the problem.</li>
+<li>Claiming an entire feature when your part was one change.</li>
+<li>Treating a test file, UI message or benchmark report as proof of live behavior.</li>
+<li>Confusing existing behavior with a proposed repair.</li>
+<li>Guessing through an ambiguous question instead of checking what the professor means.</li>
+</ul>
+<h3 class="final-topic">Three ways to clarify</h3>
+<ul>
+<li>“Do you mean the current code path or the version described in my résumé?”</li>
+<li>“Are you asking what happens if the same request repeats, or if two different requests arrive together?”</li>
+<li>“Should I explain the current behavior first, or how I would design the change?”</li>
+</ul>
+<p class="jump-up"><a href="#quick-start">↑ Project index</a></p>
+</section>
+</main>
+</div>
+</body>
+</html>
